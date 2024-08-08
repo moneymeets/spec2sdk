@@ -1,0 +1,9 @@
+class {{ enum_type.name }}({{ base_class_name }}):
+    {%- if enum_type.description %}
+    """
+    {{ enum_type.description|wordwrap(width=80)|indent }}
+    """
+    {% endif %}
+    {% for member in members -%}
+        {{ member.name }} = {{ member.value }}
+    {% endfor %}
