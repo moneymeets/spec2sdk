@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "spec2sdk"
+version = "0.1.0"
+description = "Generate Pydantic models and API client code from OpenAPI 3.x specifications"
+authors = ["moneymeets <service@moneymeets.com>"]
+readme = "README.md"
+repository = "https://github.com/moneymeets/spec2sdk"
+packages = [
+    { include="spec2sdk" },
+]
+
+[tool.poetry.dependencies]
+python = "~3.12"
+
+jinja2 = "*"
+openapi-spec-validator = "*"
+pydantic = "~2"
+pyhumps = "*"
+ruff = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pytest-cov = "*"
+
+[tool.coverage.run]
+branch = true
+source = ["."]
+omit = ["**/tests/**"]
+
+[tool.poetry.scripts]
+spec2sdk = "spec2sdk.main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

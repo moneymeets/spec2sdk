@@ -1,0 +1,20 @@
+name: CI
+on: [ push ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          show-progress: false
+
+      - uses: moneymeets/action-setup-python-poetry@master
+        with:
+          ssh_key: ${{ secrets.MERGEALOT_SSH_KEY }}
+
+      - uses: moneymeets/moneymeets-composite-actions/lint-python@master
+
+      - run: poetry run pytest --cov

@@ -1,0 +1,68 @@
+{{ imports }}
+
+from http import HTTPMethod, HTTPStatus
+from pydantic import BaseModel, TypeAdapter
+from typing import Any, Mapping, Protocol, Sequence
+
+
+class HTTPClientProtocol(Protocol):
+    def build_url(self, path: str, query: Mapping[str, Any] | None = None) -> str:
+        ...
+
+    def send_request(
+        self,
+        method: HTTPMethod,
+        url: str,
+        accept: str | None = None,
+        content_type: str | None = None,
+        body: BaseModel | None = None,
+        expected_status_code: HTTPStatus = HTTPStatus.OK,
+    ) -> bytes | None:
+        ...
+
+
+class APIClient:
+    def __init__(self, *, http_client: HTTPClientProtocol):
+        self._http_client = http_client
+
+{% for endpoint in endpoints %}
+    def {{ endpoint.method_name }}(self
+        {%- with parameters=endpoint.method_parameters -%}
+            {%- if parameters %}, *
+            {%- for parameter in parameters -%}
+                , {{ parameter.name }}: {{ parameter.type_hint }}
+                {%- if not parameter.required %} = {{ parameter.default_value }}{% endif %}
+            {%- endfor %}
+            {%- endif %}
+        {%- endwith %}) -> {{ endpoint.response.type_hint }}:
+        {% if endpoint.docstring %}"""
+{{ endpoint.docstring }}
+        """{% endif %}
+        return {% if endpoint.response.has_content %}TypeAdapter({{ endpoint.response.type_hint }}).validate_json(
+            {% endif %}self._http_client.send_request(
+                method=HTTPMethod.{{ endpoint.http_method|upper }},
+                url=self._http_client.build_url(
+                    {% with url=endpoint.path.url -%}
+                        path={% if endpoint.path.path_parameters %}f{% endif %}"{{ url }}",
+                    {%- endwith %}
+                    {% if endpoint.path.query_parameters -%}
+                    query={
+                        {%- for parameter in endpoint.path.query_parameters %}
+                        "{{ parameter.original_name }}": {{ parameter.name }},
+                        {%- endfor %}
+                    },
+                    {%- endif %}
+                ),
+                {% if endpoint.request_body -%}
+                    content_type="{{ endpoint.request_body.content_type }}",
+                    body={{ endpoint.request_body.name }},
+                {%- endif %}
+                {% if endpoint.response.media_type -%}
+                    accept="{{ endpoint.response.media_type }}",
+                {%- endif %}
+                {% if endpoint.response.status_code != 200 -%}
+                    expected_status_code=HTTPStatus.{{ endpoint.response.status_code.name }},
+                {%- endif %}
+            {% if endpoint.response.has_content %}),{% endif %}
+        )
+{% endfor %}

@@ -1,0 +1,11 @@
+class {{ model_type.name }}({{ base_class_name }}):
+    {%- if model_type.description %}
+    """
+    {{ model_type.description|wordwrap(width=80)|indent }}
+    """
+    {% endif %}
+    {% for field in fields -%}
+        {{ field.name }}: {{ field.type_definition }}
+    {% endfor %}
+    {% if arbitrary_fields_allowed %}model_config = ConfigDict(extra="allow"){% endif %}
+    {% if not arbitrary_fields_allowed and not fields %}pass{% endif %}

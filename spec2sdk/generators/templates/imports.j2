@@ -1,0 +1,3 @@
+{% for import in imports %}
+from {{ import.package }} import {{ import.name }}
+{% endfor %}

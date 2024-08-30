@@ -1,0 +1,9 @@
+from pydantic import BaseModel, ConfigDict
+
+
+class Model(BaseModel):
+    model_config = ConfigDict(
+        frozen=True,  # make instance immutable and hashable
+        populate_by_name=True,  # allow to use field name or alias to populate a model
+        strict=True,  # type of value must match type of the field, no implicit conversions
+    )
