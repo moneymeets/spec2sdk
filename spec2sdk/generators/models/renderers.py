@@ -34,7 +34,7 @@ def create_jinja_environment() -> Environment:
     return Environment(loader=FileSystemLoader(f"{Path(__file__).parent}/templates"))
 
 
-def render_alias_type(
+def render_root_model(
     py_type: PythonType,
     extra_imports: Sequence[Import] = (),
     content: str = "",
@@ -42,35 +42,35 @@ def render_alias_type(
     return TypeRenderer(
         imports=(
             *extra_imports,
-            *((Import(name="TypeAlias", package="typing"),) if py_type.name else ()),
+            *((Import(name="RootModel", package="pydantic"),) if py_type.name else ()),
         ),
-        content=f"{py_type.name}: TypeAlias = {content}" if py_type.name else None,
+        content=f"{py_type.name} = RootModel[{content}]" if py_type.name else None,
     )
 
 
 @renderers.register(predicate=is_instance(IntegerPythonType))
 def render_integer(py_type: IntegerPythonType) -> TypeRenderer:
-    return render_alias_type(py_type, content="int")
+    return render_root_model(py_type, content="int")
 
 
 @renderers.register(predicate=is_instance(FloatPythonType))
 def render_float(py_type: FloatPythonType) -> TypeRenderer:
-    return render_alias_type(py_type, content="float")
+    return render_root_model(py_type, content="float")
 
 
 @renderers.register(predicate=is_instance(BooleanPythonType))
 def render_boolean(py_type: BooleanPythonType) -> TypeRenderer:
-    return render_alias_type(py_type, content="bool")
+    return render_root_model(py_type, content="bool")
 
 
 @renderers.register(predicate=is_instance(StringPythonType))
 def render_string(py_type: StringPythonType) -> TypeRenderer:
-    return render_alias_type(py_type, content="str")
+    return render_root_model(py_type, content="str")
 
 
 @renderers.register(predicate=is_instance(OptionalPythonType))
 def render_optional(py_type: OptionalPythonType) -> TypeRenderer:
-    return render_alias_type(
+    return render_root_model(
         py_type=py_type,
         content=f"{py_type.inner_py_type.type_hint} | None",
     )
@@ -78,7 +78,7 @@ def render_optional(py_type: OptionalPythonType) -> TypeRenderer:
 
 @renderers.register(predicate=is_instance(ListPythonType))
 def render_list(py_type: ListPythonType) -> TypeRenderer:
-    return render_alias_type(
+    return render_root_model(
         py_type=py_type,
         content=f"list[{py_type.inner_py_type.type_hint}]",
     )
@@ -100,7 +100,7 @@ class File(NamedTuple):
 
 @renderers.register(predicate=is_instance(LiteralPythonType))
 def render_literal(py_type: LiteralPythonType) -> TypeRenderer:
-    return render_alias_type(
+    return render_root_model(
         py_type=py_type,
         extra_imports=(Import(name="Literal", package="typing"),),
         content="Literal[" + ",".join(repr(literal) for literal in py_type.literals) + "]",
@@ -152,7 +152,7 @@ def render_str_enum(py_type: StrEnumPythonType) -> TypeRenderer:
 
 @renderers.register(predicate=is_instance(UnionPythonType))
 def render_union(py_type: UnionPythonType) -> TypeRenderer:
-    return render_alias_type(
+    return render_root_model(
         py_type,
         content=" | ".join(py_type.type_hint for py_type in py_type.inner_py_types),
     )

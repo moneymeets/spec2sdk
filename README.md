@@ -128,7 +128,7 @@ from spec2sdk.generators.entities import PythonType
 from spec2sdk.generators.predicates import is_instance
 from spec2sdk.generators.imports import Import
 from spec2sdk.generators.models.entities import TypeRenderer
-from spec2sdk.generators.models.renderers import render_alias_type, renderers
+from spec2sdk.generators.models.renderers import render_root_model, renderers
 from spec2sdk.main import generate
 
 
@@ -152,7 +152,7 @@ def convert_email_field(data_type: StringDataType) -> EmailPythonType:
 
 @renderers.register(predicate=is_instance(EmailPythonType))
 def render_email_field(py_type: EmailPythonType) -> TypeRenderer:
-    return render_alias_type(
+    return render_root_model(
         py_type,
         extra_imports=(Import(name="EmailStr", package="pydantic"),),
         content="EmailStr",
