@@ -1,0 +1,45 @@
+openapi: 3.0.0
+
+info:
+  title: Example API
+  version: '1.0'
+
+paths:
+  /comment{commentId}:
+    get:
+      operationId: getComment
+      parameters:
+        - $ref: '#/components/parameters/CommentId'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+
+components:
+  parameters:
+    CommentId:
+      name: commentId
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  schemas:
+    Comment:
+      type: object
+      properties:
+        text:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string

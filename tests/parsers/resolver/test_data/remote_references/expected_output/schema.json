@@ -1,0 +1,60 @@
+{
+  "info": {
+    "title": "Example API",
+    "version": "1.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/comment{commentId}": {
+      "get": {
+        "operationId": "getComment",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "commentId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "x-schema-name": "CommentId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "author": {
+                      "properties": {
+                        "city": {
+                          "maxLength": 50,
+                          "type": "string",
+                          "x-schema-name": "City"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object",
+                      "x-schema-name": "User"
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "x-schema-name": "Comment"
+                }
+              }
+            },
+            "description": "Successful response"
+          }
+        }
+      }
+    }
+  }
+}
