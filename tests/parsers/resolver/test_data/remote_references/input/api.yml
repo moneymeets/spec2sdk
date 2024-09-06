@@ -1,0 +1,19 @@
+openapi: 3.0.0
+
+info:
+  title: Example API
+  version: '1.0'
+
+paths:
+  /comment{commentId}:
+    get:
+      operationId: getComment
+      parameters:
+        - $ref: 'definitions/parameters.yml#/components/parameters/CommentId'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: 'definitions/schemas.yml#/components/schemas/Comment'

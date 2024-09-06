@@ -34,7 +34,9 @@ class ResolvingParser:
                 parsed_ref = urlparse(reference)
 
                 if parsed_ref.scheme == parsed_ref.netloc == "":
-                    ref_relative_filepath = Path(parsed_ref.path) if parsed_ref.path else relative_filepath
+                    ref_relative_filepath = (
+                        relative_filepath.parent / Path(parsed_ref.path) if parsed_ref.path else relative_filepath
+                    )
                     ref_schema_fragment = reduce(
                         lambda acc, key: acc[key],
                         filter(None, parsed_ref.fragment.split("/")),

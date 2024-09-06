@@ -1,0 +1,5 @@
+components:
+  schemas:
+    City:
+      type: string
+      maxLength: 50
