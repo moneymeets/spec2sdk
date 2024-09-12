@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from spec2sdk.parsers.exceptions import CircularReference
 from spec2sdk.parsers.resolver import ResolvingParser
 
 TEST_DATA_DIR = Path(__file__).parent / "test_data"
@@ -20,3 +21,8 @@ def test_resolve_references(test_data_name: str):
         )
         == expected_schema
     )
+
+
+def test_circular_reference():
+    with pytest.raises(CircularReference):
+        ResolvingParser(base_path=TEST_DATA_DIR / "circular_reference").parse(relative_filepath=Path("api.yml"))
