@@ -12,8 +12,6 @@ jobs:
           show-progress: false
 
       - uses: moneymeets/action-setup-python-poetry@master
-        with:
-          ssh_key: ${{ secrets.MERGEALOT_SSH_KEY }}
 
       - uses: moneymeets/moneymeets-composite-actions/lint-python@master
 
