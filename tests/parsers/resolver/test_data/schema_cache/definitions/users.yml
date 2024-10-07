@@ -1,0 +1,25 @@
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+
+    UserGroup:
+      type: object
+      properties:
+        name:
+          type: string
+        permissions:
+          type: array
+          items:
+            $ref: 'users.yml#/components/schemas/Permission'
+
+    Permission:
+      type: object
+      properties:
+        name:
+          type: string

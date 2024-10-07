@@ -1,8 +1,11 @@
 import json
 from pathlib import Path
+from unittest.mock import patch
+from urllib.parse import urlparse
 
 import pytest
 
+from spec2sdk.parsers import resolver
 from spec2sdk.parsers.exceptions import CircularReference
 from spec2sdk.parsers.resolver import ResolvingParser
 
@@ -12,17 +15,35 @@ TEST_DATA_DIR = Path(__file__).parent / "test_data"
 @pytest.mark.parametrize("test_data_name", ("local_references", "remote_references"))
 def test_resolve_references(test_data_name: str):
     data_dir = TEST_DATA_DIR / test_data_name
-    input_spec = data_dir / "input" / "api.yml"
+    spec_path = data_dir / "input" / "api.yml"
     expected_schema = json.loads((data_dir / "expected_output" / "schema.json").read_text())
 
-    assert (
-        ResolvingParser(base_path=input_spec.parent).parse(
-            relative_filepath=input_spec.relative_to(input_spec.parent),
+    assert ResolvingParser().parse(url=spec_path.absolute().as_uri()) == expected_schema
+
+
+def test_url_references():
+    def mock_response(url: str) -> str:
+        parsed_url = urlparse(url)
+        filepath = (
+            Path(parsed_url.path)
+            if parsed_url.scheme == "file"
+            else (TEST_DATA_DIR / "url_references" / "input" / parsed_url.path.removeprefix("/"))
         )
-        == expected_schema
-    )
+        return filepath.read_text()
+
+    with patch.object(resolver, "urlopen", side_effect=mock_response):
+        test_resolve_references("url_references")
 
 
 def test_circular_reference():
     with pytest.raises(CircularReference):
-        ResolvingParser(base_path=TEST_DATA_DIR / "circular_reference").parse(relative_filepath=Path("api.yml"))
+        ResolvingParser().parse(url=(TEST_DATA_DIR / "circular_reference" / "api.yml").absolute().as_uri())
+
+
+def test_schema_cache():
+    def mock_response(url: str) -> str:
+        return Path(urlparse(url).path).read_text()
+
+    with patch.object(resolver, "urlopen", side_effect=mock_response) as mock_urlopen:
+        ResolvingParser().parse(url=(TEST_DATA_DIR / "schema_cache" / "api.yml").absolute().as_uri())
+        assert mock_urlopen.call_count == 2

@@ -1,65 +1,72 @@
 from functools import reduce
-from pathlib import Path
-from typing import Any, Sequence
-from urllib.parse import urlparse
+from typing import Any, ClassVar, Sequence
+from urllib.parse import urldefrag, urljoin
+from urllib.request import urlopen
 
 import yaml
+from pydantic import BaseModel, ConfigDict
 
 from spec2sdk.parsers.exceptions import CircularReference
 
 SCHEMA_NAME_FIELD = "x-schema-name"
 
 
+class SchemaLoader(BaseModel):
+    model_config = ConfigDict(frozen=True)
+    _schema_cache: ClassVar[dict] = {}
+    schema_url: str
+
+    def _read_schema(self) -> dict:
+        if self.schema_url not in self._schema_cache:
+            self._schema_cache[self.schema_url] = yaml.safe_load(stream=urlopen(self.schema_url))
+
+        return self._schema_cache[self.schema_url]
+
+    def get_schema_fragment(self, path: str) -> dict:
+        return reduce(
+            lambda acc, key: acc[key],
+            filter(None, path.split("/")),
+            self._read_schema(),
+        )
+
+    def parse(self, reference: str) -> "SchemaLoader":
+        reference_url, _ = urldefrag(reference)
+        new_schema_url = urljoin(self.schema_url, reference_url)
+
+        return self if new_schema_url == self.schema_url else SchemaLoader(schema_url=new_schema_url)
+
+
 class ResolvingParser:
-    def __init__(self, base_path: Path):
-        self._base_path = base_path
-        self._file_cache = {}
+    def __init__(self):
         self._resolved_references = {}
 
-    def _read_schema_from_file(self, relative_filepath: Path) -> dict:
-        absolute_filepath = (self._base_path / relative_filepath).resolve()
-        if absolute_filepath not in self._file_cache:
-            self._file_cache[absolute_filepath] = yaml.safe_load(absolute_filepath.read_text())
-        return self._file_cache[absolute_filepath]
-
-    def _resolve_schema(self, relative_filepath: Path, schema: dict, parent_references: Sequence[str]) -> dict:
+    def _resolve_schema(self, schema_loader: SchemaLoader, schema: dict, parent_reference_ids: Sequence[str]) -> dict:
         def resolve_value(value: Any) -> Any:
             if isinstance(value, dict):
-                return self._resolve_schema(relative_filepath, value, parent_references)
+                return self._resolve_schema(schema_loader, value, parent_reference_ids)
             elif isinstance(value, list):
                 return [resolve_value(item) for item in value]
             else:
                 return value
 
         def resolve_reference(reference: str) -> dict:
-            if reference in parent_references:
+            reference_schema_loader = schema_loader.parse(reference)
+            _, reference_fragment_path = urldefrag(reference)
+            reference_id = f"{reference_schema_loader.schema_url}#{reference_fragment_path}"
+
+            if reference_id in parent_reference_ids:
                 raise CircularReference(f"Circular reference found in {reference}")
 
-            if reference not in self._resolved_references:
-                parsed_ref = urlparse(reference)
+            if reference_id not in self._resolved_references:
+                self._resolved_references[reference_id] = {
+                    SCHEMA_NAME_FIELD: reference_fragment_path.rsplit("/", 1)[-1],
+                } | self._resolve_schema(
+                    schema_loader=reference_schema_loader,
+                    schema=reference_schema_loader.get_schema_fragment(path=reference_fragment_path),
+                    parent_reference_ids=(*parent_reference_ids, reference_id),
+                )
 
-                if parsed_ref.scheme == parsed_ref.netloc == "":
-                    ref_relative_filepath = (
-                        relative_filepath.parent / Path(parsed_ref.path) if parsed_ref.path else relative_filepath
-                    )
-                    ref_schema_fragment = reduce(
-                        lambda acc, key: acc[key],
-                        filter(None, parsed_ref.fragment.split("/")),
-                        self._read_schema_from_file(ref_relative_filepath),
-                    )
-                    ref_schema_name = parsed_ref.fragment.rsplit("/", 1)[-1]
-
-                    self._resolved_references[reference] = {
-                        SCHEMA_NAME_FIELD: ref_schema_name,
-                    } | self._resolve_schema(
-                        relative_filepath=ref_relative_filepath,
-                        schema=ref_schema_fragment,
-                        parent_references=(*parent_references, reference),
-                    )
-                else:
-                    raise NotImplementedError(f"Unsupported schema reference: {reference}")
-
-            return self._resolved_references[reference]
+            return self._resolved_references[reference_id]
 
         return {
             new_key: new_value
@@ -69,9 +76,11 @@ class ResolvingParser:
             ).items()
         }
 
-    def parse(self, relative_filepath: Path) -> dict:
+    def parse(self, url: str) -> dict:
+        schema_loader = SchemaLoader(schema_url=url)
+
         return self._resolve_schema(
-            relative_filepath=relative_filepath,
-            schema=self._read_schema_from_file(relative_filepath),
-            parent_references=(),
+            schema_loader=schema_loader,
+            schema=schema_loader.get_schema_fragment(path="/"),
+            parent_reference_ids=(),
         )

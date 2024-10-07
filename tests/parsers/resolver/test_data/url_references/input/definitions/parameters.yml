@@ -1,0 +1,8 @@
+components:
+  parameters:
+    CommentId:
+      name: commentId
+      in: path
+      required: true
+      schema:
+        type: integer
