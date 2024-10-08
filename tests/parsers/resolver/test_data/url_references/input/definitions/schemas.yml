@@ -1,0 +1,9 @@
+components:
+  schemas:
+    Comment:
+      type: object
+      properties:
+        text:
+          type: string
+        author:
+          $ref: 'users/user.yml#/components/schemas/User'

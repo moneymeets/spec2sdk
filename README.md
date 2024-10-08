@@ -10,7 +10,7 @@
 from pathlib import Path
 from spec2sdk.main import generate
 
-generate(input_file=Path("path/to/api.yml"), output_dir=Path("path/to/output-dir/"))
+generate(url=Path("path/to/api.yml").absolute().as_uri(), output_dir=Path("path/to/output-dir/"))
 ```
 
 # Open API specification requirements
@@ -160,7 +160,7 @@ def render_email_field(py_type: EmailPythonType) -> TypeRenderer:
 
 
 if __name__ == "__main__":
-    generate(input_file=Path("api.yml"), output_dir=Path("output"))
+    generate(url=Path("api.yml").absolute().as_uri(), output_dir=Path("output"))
 ```
 
 ## Output

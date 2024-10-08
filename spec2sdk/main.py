@@ -2,6 +2,7 @@ import argparse
 import shutil
 import subprocess
 from pathlib import Path
+from urllib.parse import urlparse
 
 from openapi_spec_validator import validate
 
@@ -28,10 +29,8 @@ def format_file(path: Path):
     run_formatter("ruff check --fix")
 
 
-def generate(input_file: Path, output_dir: Path):
-    schema = ResolvingParser(base_path=input_file.parent).parse(
-        relative_filepath=input_file.relative_to(input_file.parent),
-    )
+def generate(url: str, output_dir: Path):
+    schema = ResolvingParser().parse(url=url)
     validate(schema)
     spec = parse_spec(schema)
 
@@ -53,9 +52,9 @@ def generate(input_file: Path, output_dir: Path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input-file",
-        type=Path,
-        help="Path to the OpenAPI specification file in the YAML format",
+        "--input",
+        type=str,
+        help="File path or URL to the OpenAPI specification file in the YAML format",
         required=True,
     )
     parser.add_argument(
@@ -66,7 +65,10 @@ def main():
     )
 
     args = parser.parse_args()
-    generate(input_file=args.input_file, output_dir=args.output_dir)
+    generate(
+        url=Path(args.input).absolute().as_uri() if urlparse(args.input).scheme == "" else args.input,
+        output_dir=args.output_dir,
+    )
 
 
 if __name__ == "__main__":
