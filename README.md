@@ -2,7 +2,7 @@
 
 ## From command line
 
-`spec2sdk --input-file path/to/api.yml --output-dir path/to/output-dir/`
+`spec2sdk --input path/to/api.yml --output-dir path/to/output-dir/`
 
 ## From the code
 
