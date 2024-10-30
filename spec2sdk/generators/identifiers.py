@@ -1,21 +1,19 @@
 import re
 from keyword import iskeyword
+from typing import Final, Pattern
 
 from humps import decamelize, pascalize
+
+INVALID_CHARACTERS_PATTERN: Final[Pattern] = re.compile(r"[^0-9a-z]+|^[^a-z]+", flags=re.IGNORECASE)
 
 
 def make_identifier(name: str) -> str:
     """
-    Makes valid Python identifier from the string.
+    Makes valid Python identifier from the string by removing invalid leading characters
+    and replacing invalid characters with underscore.
     """
-    # Remove invalid characters
-    name = re.sub(r"[^0-9a-zA-Z_]", "_", name)
 
-    # Remove leading characters until we find a letter
-    name = re.sub(r"^[^a-zA-Z]+", "", name)
-
-    # Replace consecutive duplicates of the underscore
-    name = re.sub(r"_+", "_", name)
+    name = "_".join(name_part for name_part in INVALID_CHARACTERS_PATTERN.split(name) if name_part)
 
     # Add underscore to the name if it's a valid Python keyword
     if iskeyword(name):
