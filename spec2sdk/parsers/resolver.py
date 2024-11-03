@@ -68,13 +68,14 @@ class ResolvingParser:
 
             return self._resolved_references[reference_id]
 
-        return {
-            new_key: new_value
-            for key, value in schema.items()
-            for new_key, new_value in (
-                resolve_reference(value) if key == "$ref" else {key: resolve_value(value)}
-            ).items()
-        }
+        # Object containing $ref cannot be extended with additional properties
+        # and any properties added SHALL be ignored.
+        # https://spec.openapis.org/oas/v3.0.0.html#reference-object
+        return (
+            resolve_reference(schema["$ref"])
+            if "$ref" in schema
+            else {key: resolve_value(value) for key, value in schema.items()}
+        )
 
     def parse(self, url: str) -> dict:
         schema_loader = SchemaLoader(schema_url=url)

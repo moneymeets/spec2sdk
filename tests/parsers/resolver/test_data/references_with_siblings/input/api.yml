@@ -1,0 +1,28 @@
+openapi: 3.0.0
+
+info:
+  title: Example API
+  version: '1.0'
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+                description: Response content description
+                nullable: true
+
+components:
+  schemas:
+    HealthStatus:
+      description: Schema description
+      type: object
+      properties:
+        status:
+          type: string
