@@ -182,7 +182,7 @@ def render_model(py_type: ModelPythonType) -> TypeRenderer:
 
         return ModelFieldView(
             name=field.name,
-            type_definition=field.inner_py_type.type_hint + (f' = Field({",".join(attrs)})' if attrs else ""),
+            type_definition=field.type_hint + (f' = Field({",".join(attrs)})' if attrs else ""),
         )
 
     base_class_names = tuple(base_model.name for base_model in py_type.base_models if base_model.name)
