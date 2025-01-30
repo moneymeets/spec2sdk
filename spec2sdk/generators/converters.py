@@ -82,32 +82,26 @@ def convert_boolean(data_type: BooleanDataType) -> BooleanPythonType:
 
 @converters.register(predicate=is_instance(ObjectDataType))
 def convert_object(data_type: ObjectDataType) -> ModelPythonType:
-    fields = []
-
-    for prop in data_type.properties:
-        property_data_type = prop.data_type
-
-        if not prop.is_required:
-            property_data_type = property_data_type.model_copy(update={"is_nullable": True})
-
-        inner_py_type = converters.convert(property_data_type)
-
-        fields.append(
+    return ModelPythonType(
+        **get_common_fields(data_type),
+        base_models=(),
+        fields=tuple(
             ModelField(
                 name=make_variable_name(prop.name),
                 alias=prop.name,
                 type_hint=inner_py_type.type_hint,
-                description=prop.data_type.description,
+                description=inner_py_type.description,
                 default_value=inner_py_type.default_value,
                 is_required=prop.is_required,
                 inner_py_type=inner_py_type,
-            ),
-        )
-
-    return ModelPythonType(
-        **get_common_fields(data_type),
-        base_models=(),
-        fields=tuple(fields),
+            )
+            for prop in data_type.properties
+            if (
+                inner_py_type := converters.convert(
+                    prop.data_type if prop.is_required else prop.data_type.model_copy(update={"is_nullable": True}),
+                )
+            )
+        ),
         arbitrary_fields_allowed=data_type.additional_properties,
     )
 
