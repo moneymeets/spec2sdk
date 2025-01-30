@@ -1,3 +1,4 @@
+from http import HTTPMethod
 from typing import Any, Callable, Sequence, TypedDict
 
 from ..registry import Registry
@@ -166,8 +167,16 @@ def parse_all_of(schema: dict) -> AllOfDataType:
 def parse_spec(schema: dict) -> Specification:
     endpoints = []
 
-    for path, operations in schema.get("paths", {}).items():
-        for method, operation in operations.items():
+    for path, path_item in schema.get("paths", {}).items():
+        # Path item can have different fields, not just HTTP method names
+        # https://spec.openapis.org/oas/v3.0.0.html#fixed-fields-6
+        operations = tuple(
+            (field_name, field_value)
+            for field_name, field_value in path_item.items()
+            if field_name.upper() in HTTPMethod
+        )
+
+        for method, operation in operations:
             parameters = tuple(
                 Parameter(
                     name=parameter["name"],
