@@ -6,7 +6,7 @@ from urllib.request import urlopen
 import yaml
 from pydantic import BaseModel, ConfigDict
 
-from spec2sdk.parsers.exceptions import CircularReference
+from spec2sdk.openapi.exceptions import CircularReference
 
 SCHEMA_NAME_FIELD = "x-schema-name"
 

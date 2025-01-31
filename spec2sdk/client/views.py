@@ -4,9 +4,9 @@ from http import HTTPStatus
 from typing import Sequence
 
 from spec2sdk.base import Model
-from spec2sdk.generators.converters import converters
-from spec2sdk.generators.identifiers import make_variable_name
-from spec2sdk.parsers.entities import Endpoint, Parameter, ParameterLocation, Path, RequestBody, Response
+from spec2sdk.models.converters import converters
+from spec2sdk.models.identifiers import make_variable_name
+from spec2sdk.openapi.entities import Endpoint, Parameter, ParameterLocation, Path, RequestBody, Response
 
 
 def wordwrap(s: str, width: int) -> str:
@@ -99,12 +99,12 @@ class ResponseView:
         )
 
     @property
-    def has_content(self):
+    def has_content(self) -> bool:
         return self.__response.content is not None
 
     @property
     def media_type(self) -> str | None:
-        return self.__response.content.media_type if self.has_content else None
+        return self.__response.content.media_type if self.__response.content else None
 
     @property
     def status_code(self) -> HTTPStatus:

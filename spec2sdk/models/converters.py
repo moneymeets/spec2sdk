@@ -1,24 +1,24 @@
 from typing import Any, TypedDict
 
-from spec2sdk.generators.entities import (
-    BooleanPythonType,
+from spec2sdk.models.entities import (
+    BooleanType,
     EnumMember,
-    EnumPythonType,
-    FilePythonType,
-    FloatPythonType,
-    IntegerPythonType,
-    ListPythonType,
-    LiteralPythonType,
+    EnumType,
+    FileType,
+    FloatType,
+    IntegerType,
+    ListType,
+    LiteralType,
     ModelField,
-    ModelPythonType,
-    OptionalPythonType,
-    StrEnumPythonType,
-    StringPythonType,
-    UnionPythonType,
+    ModelType,
+    OptionalType,
+    StrEnumType,
+    StringType,
+    UnionType,
 )
-from spec2sdk.generators.identifiers import make_class_name, make_constant_name, make_variable_name
-from spec2sdk.generators.predicates import is_binary_format, is_enum, is_instance, is_literal, is_optional, is_str_enum
-from spec2sdk.parsers.entities import (
+from spec2sdk.models.identifiers import make_class_name, make_constant_name, make_variable_name
+from spec2sdk.models.predicates import is_binary_format, is_enum, is_instance, is_literal, is_optional, is_str_enum
+from spec2sdk.openapi.entities import (
     AllOfDataType,
     AnyOfDataType,
     ArrayDataType,
@@ -38,51 +38,41 @@ converters = Registry()
 
 class CommonFields(TypedDict):
     name: str | None
-    type_hint: str | None
     description: str | None
     default_value: Any
 
 
-def get_common_fields(data_type: DataType, type_hint: str | None = None) -> CommonFields:
+def get_common_fields(data_type: DataType) -> CommonFields:
     return CommonFields(
         name=make_class_name(data_type.name) if data_type.name else None,
-        type_hint=make_class_name(data_type.name) if data_type.name else type_hint,
         description=data_type.description,
         default_value=data_type.default_value,
     )
 
 
 @converters.register(predicate=is_instance(StringDataType))
-def convert_string(data_type: StringDataType) -> StringPythonType:
-    return StringPythonType(
-        **get_common_fields(data_type, "str"),
-    )
+def convert_string(data_type: StringDataType) -> StringType:
+    return StringType(**get_common_fields(data_type))
 
 
 @converters.register(predicate=is_instance(IntegerDataType))
-def convert_integer(data_type: IntegerDataType) -> IntegerPythonType:
-    return IntegerPythonType(
-        **get_common_fields(data_type, "int"),
-    )
+def convert_integer(data_type: IntegerDataType) -> IntegerType:
+    return IntegerType(**get_common_fields(data_type))
 
 
 @converters.register(predicate=is_instance(NumberDataType))
-def convert_number(data_type: NumberDataType) -> FloatPythonType:
-    return FloatPythonType(
-        **get_common_fields(data_type, "float"),
-    )
+def convert_number(data_type: NumberDataType) -> FloatType:
+    return FloatType(**get_common_fields(data_type))
 
 
 @converters.register(predicate=is_instance(BooleanDataType))
-def convert_boolean(data_type: BooleanDataType) -> BooleanPythonType:
-    return BooleanPythonType(
-        **get_common_fields(data_type, "bool"),
-    )
+def convert_boolean(data_type: BooleanDataType) -> BooleanType:
+    return BooleanType(**get_common_fields(data_type))
 
 
 @converters.register(predicate=is_instance(ObjectDataType))
-def convert_object(data_type: ObjectDataType) -> ModelPythonType:
-    return ModelPythonType(
+def convert_object(data_type: ObjectDataType) -> ModelType:
+    return ModelType(
         **get_common_fields(data_type),
         base_models=(),
         fields=tuple(
@@ -107,27 +97,25 @@ def convert_object(data_type: ObjectDataType) -> ModelPythonType:
 
 
 @converters.register(predicate=is_instance(ArrayDataType))
-def convert_array(data_type: ArrayDataType) -> ListPythonType:
-    inner_py_type = converters.convert(data_type.item_type)
-
-    return ListPythonType(
-        **get_common_fields(data_type, f"list[{inner_py_type.type_hint}]"),
-        inner_py_type=inner_py_type,
+def convert_array(data_type: ArrayDataType) -> ListType:
+    return ListType(
+        **get_common_fields(data_type),
+        inner_py_type=converters.convert(data_type.item_type),
     )
 
 
 @converters.register(predicate=is_instance((AnyOfDataType, OneOfDataType)))
-def convert_one_of(data_type: OneOfDataType | AnyOfDataType) -> UnionPythonType:
+def convert_one_of(data_type: OneOfDataType | AnyOfDataType) -> UnionType:
     inner_py_types = tuple(map(converters.convert, data_type.data_types))
 
-    return UnionPythonType(
-        **get_common_fields(data_type, " | ".join(py_type.type_hint for py_type in inner_py_types)),
+    return UnionType(
+        **get_common_fields(data_type),
         inner_py_types=inner_py_types,
     )
 
 
 @converters.register(predicate=is_instance(AllOfDataType))
-def convert_all_of(data_type: AllOfDataType) -> ModelPythonType:
+def convert_all_of(data_type: AllOfDataType) -> ModelType:
     if not all(isinstance(inner_data_type, ObjectDataType) for inner_data_type in data_type.data_types):
         raise TypeError("Non-object data types in allOf is not supported")
 
@@ -141,9 +129,8 @@ def convert_all_of(data_type: AllOfDataType) -> ModelPythonType:
         nameless_inner_data_types[0] if nameless_inner_data_types else data_type.data_types[0],
     )
 
-    return ModelPythonType(
+    return ModelType(
         name=make_class_name(data_type.name),
-        type_hint=make_class_name(data_type.name),
         description=data_type.description,
         default_value=model_type.default_value,
         base_models=tuple(
@@ -157,7 +144,7 @@ def convert_all_of(data_type: AllOfDataType) -> ModelPythonType:
 
 
 @converters.register(predicate=is_enum)
-def convert_enum(data_type: DataType) -> EnumPythonType:
+def convert_enum(data_type: DataType) -> EnumType:
     def generate_enum_member_name(enumerator: Enumerator) -> str:
         if enumerator.name:
             name = enumerator.name
@@ -177,9 +164,8 @@ def convert_enum(data_type: DataType) -> EnumPythonType:
         if member.value == data_type.default_value:
             default_value = member
 
-    return EnumPythonType(
+    return EnumType(
         name=make_class_name(data_type.name),
-        type_hint=make_class_name(data_type.name),
         description=data_type.description,
         default_value=default_value,
         members=members,
@@ -187,47 +173,34 @@ def convert_enum(data_type: DataType) -> EnumPythonType:
 
 
 @converters.register(predicate=is_str_enum)
-def convert_str_enum(data_type: StringDataType) -> StrEnumPythonType:
-    enum_type = convert_enum(data_type)
-    return StrEnumPythonType(
-        name=enum_type.name,
-        type_hint=enum_type.type_hint,
-        description=enum_type.description,
-        default_value=enum_type.default_value,
-        members=enum_type.members,
-    )
+def convert_str_enum(data_type: StringDataType) -> StrEnumType:
+    return StrEnumType(**convert_enum(data_type).model_dump())
 
 
 @converters.register(predicate=is_binary_format)
-def convert_binary(data_type: StringDataType) -> FilePythonType:
-    return FilePythonType(
+def convert_binary(data_type: StringDataType) -> FileType:
+    return FileType(
         name="File",
-        type_hint="File",
         description=data_type.description,
         default_value=data_type.default_value,
     )
 
 
 @converters.register(predicate=is_literal)
-def convert_literal(data_type: DataType) -> LiteralPythonType:
-    literals = tuple(enumerator.value for enumerator in data_type.enumerators)
-    return LiteralPythonType(
+def convert_literal(data_type: DataType) -> LiteralType:
+    return LiteralType(
         name=None,
-        type_hint="Literal[" + ",".join(repr(literal) for literal in literals) + "]",
         description=data_type.description,
         default_value=data_type.default_value,
-        literals=literals,
+        literals=tuple(enumerator.value for enumerator in data_type.enumerators),
     )
 
 
 @converters.register(predicate=is_optional, priority=99)
-def convert_optional(data_type: DataType) -> OptionalPythonType:
-    inner_py_type = converters.convert(data_type.model_copy(update={"is_nullable": False}))
-
-    return OptionalPythonType(
+def convert_optional(data_type: DataType) -> OptionalType:
+    return OptionalType(
         name=None,
-        type_hint=f"{inner_py_type.type_hint} | None",
         description=data_type.description,
         default_value=data_type.default_value,
-        inner_py_type=inner_py_type,
+        inner_py_type=converters.convert(data_type.model_copy(update={"is_nullable": False})),
     )

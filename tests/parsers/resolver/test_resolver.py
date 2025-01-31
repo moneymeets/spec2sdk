@@ -5,9 +5,9 @@ from urllib.parse import urlparse
 
 import pytest
 
-from spec2sdk.parsers import resolver
-from spec2sdk.parsers.exceptions import CircularReference
-from spec2sdk.parsers.resolver import ResolvingParser
+from spec2sdk.openapi import resolver
+from spec2sdk.openapi.exceptions import CircularReference
+from spec2sdk.openapi.resolver import ResolvingParser
 
 TEST_DATA_DIR = Path(__file__).parent / "test_data"
 
