@@ -139,11 +139,10 @@ class EmailType(PythonType):
     def imports(self) -> Sequence[Import]:
         return (
             Import(name="EmailStr", package="pydantic"),
-            *((Import(name="RootModel", package="pydantic"),) if self.name else ()),
         )
 
     def render(self) -> str:
-        return f"{self.name} = RootModel[EmailStr]" if self.name else ""
+        return f"type {self.name} = EmailStr" if self.name else ""
 
 
 def is_email_format(data_type: DataType) -> bool:

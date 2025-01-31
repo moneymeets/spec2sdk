@@ -47,13 +47,10 @@ class LiteralType(PythonType):
 
     @property
     def imports(self) -> Sequence[Import]:
-        return (
-            Import(name="Literal", package="typing"),
-            *((Import(name="RootModel", package="pydantic"),) if self.name else ()),
-        )
+        return (Import(name="Literal", package="typing"),)
 
     def render(self) -> str:
-        return f"{self.name} = RootModel[{self.type_hint}]" if self.name else ""
+        return f"type {self.name} = {self.type_hint}" if self.name else ""
 
 
 class EnumMember(Model):
@@ -116,10 +113,10 @@ class IntegerType(PythonType):
 
     @property
     def imports(self) -> Sequence[Import]:
-        return (Import(name="RootModel", package="pydantic"),) if self.name else ()
+        return ()
 
     def render(self) -> str:
-        return f"{self.name} = RootModel[int]" if self.name else ""
+        return f"type {self.name} = int" if self.name else ""
 
 
 class FloatType(PythonType):
@@ -131,10 +128,10 @@ class FloatType(PythonType):
 
     @property
     def imports(self) -> Sequence[Import]:
-        return (Import(name="RootModel", package="pydantic"),) if self.name else ()
+        return ()
 
     def render(self) -> str:
-        return f"{self.name} = RootModel[float]" if self.name else ""
+        return f"type {self.name} = float" if self.name else ""
 
 
 class BooleanType(PythonType):
@@ -146,10 +143,10 @@ class BooleanType(PythonType):
 
     @property
     def imports(self) -> Sequence[Import]:
-        return (Import(name="RootModel", package="pydantic"),) if self.name else ()
+        return ()
 
     def render(self) -> str:
-        return f"{self.name} = RootModel[bool]" if self.name else ""
+        return f"type {self.name} = bool" if self.name else ""
 
 
 class StringType(PythonType):
@@ -161,10 +158,10 @@ class StringType(PythonType):
 
     @property
     def imports(self) -> Sequence[Import]:
-        return (Import(name="RootModel", package="pydantic"),) if self.name else ()
+        return ()
 
     def render(self) -> str:
-        return f"{self.name} = RootModel[str]" if self.name else ""
+        return f"type {self.name} = str" if self.name else ""
 
 
 class FileType(PythonType):
@@ -267,12 +264,12 @@ class OptionalType(PythonType):
 
     @property
     def imports(self) -> Sequence[Import]:
-        return (Import(name="RootModel", package="pydantic"),) if self.name else ()
+        return ()
 
     def render(self) -> str:
         if self.name:
             root_type = f"{self.inner_py_type.type_hint} | None"
-            return f"{self.name} = RootModel[{root_type}]"
+            return f"type {self.name} = {root_type}"
         else:
             return ""
 
@@ -290,12 +287,12 @@ class ListType(PythonType):
 
     @property
     def imports(self) -> Sequence[Import]:
-        return (Import(name="RootModel", package="pydantic"),) if self.name else ()
+        return ()
 
     def render(self) -> str:
         if self.name:
             root_type = f"list[{self.inner_py_type.type_hint}]"
-            return f"{self.name} = RootModel[{root_type}]"
+            return f"type {self.name} = {root_type}"
         else:
             return ""
 
@@ -313,11 +310,11 @@ class UnionType(PythonType):
 
     @property
     def imports(self) -> Sequence[Import]:
-        return (Import(name="RootModel", package="pydantic"),) if self.name else ()
+        return ()
 
     def render(self) -> str:
         if self.name:
             root_type = " | ".join(py_type.type_hint for py_type in self.inner_py_types)
-            return f"{self.name} = RootModel[{root_type}]"
+            return f"type {self.name} = {root_type}"
         else:
             return ""

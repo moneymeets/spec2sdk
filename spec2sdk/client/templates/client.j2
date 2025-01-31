@@ -1,7 +1,7 @@
 {{ imports }}
 
 from http import HTTPMethod, HTTPStatus
-from pydantic import BaseModel, TypeAdapter
+from pydantic import TypeAdapter
 from typing import Any, Mapping, Protocol, Sequence
 
 
@@ -15,7 +15,7 @@ class HTTPClientProtocol(Protocol):
         url: str,
         accept: str | None = None,
         content_type: str | None = None,
-        body: BaseModel | None = None,
+        content: bytes | None = None,
         expected_status_code: HTTPStatus = HTTPStatus.OK,
     ) -> bytes | None:
         ...
@@ -55,7 +55,7 @@ class APIClient:
                 ),
                 {% if endpoint.request_body -%}
                     content_type="{{ endpoint.request_body.content_type }}",
-                    body={{ endpoint.request_body.name }},
+                    content=TypeAdapter({{ endpoint.request_body.type_hint }}).dump_json({{ endpoint.request_body.name }}, by_alias=True),
                 {%- endif %}
                 {% if endpoint.response.media_type -%}
                     accept="{{ endpoint.response.media_type }}",
