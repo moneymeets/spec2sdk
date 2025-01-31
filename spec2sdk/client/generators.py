@@ -1,15 +1,13 @@
 from pathlib import Path
 from typing import Sequence
 
-from jinja2 import Environment, FileSystemLoader
-
-from spec2sdk.generators.converters import converters
-from spec2sdk.generators.entities import PythonType
-from spec2sdk.parsers.entities import Specification
-
-from ..imports import Import, render_imports
-from ..utils import get_root_data_types
-from .views import EndpointView
+from spec2sdk.client.views import EndpointView
+from spec2sdk.models.converters import converters
+from spec2sdk.models.entities import PythonType
+from spec2sdk.models.imports import Import, render_imports
+from spec2sdk.openapi.entities import Specification
+from spec2sdk.openapi.parsers import get_root_data_types
+from spec2sdk.templating import create_jinja_environment
 
 
 def get_imports(py_types: Sequence[PythonType], models_import: Import) -> Sequence[Import]:
@@ -39,7 +37,7 @@ def generate_client(spec: Specification, models_import: Import) -> str:
     imports = get_imports(py_types=root_python_types, models_import=models_import)
 
     return (
-        Environment(loader=FileSystemLoader(f"{Path(__file__).parent}/templates"))
+        create_jinja_environment(templates_path=Path(__file__).parent / "templates")
         .get_template("client.j2")
         .render(
             imports=render_imports(imports),

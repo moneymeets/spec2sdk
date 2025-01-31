@@ -6,11 +6,11 @@ from urllib.parse import urlparse
 
 from openapi_spec_validator import validate
 
-from spec2sdk.generators.client.generators import generate_client
-from spec2sdk.generators.imports import Import
-from spec2sdk.generators.models.generators import generate_models
-from spec2sdk.parsers.parsers import parse_spec
-from spec2sdk.parsers.resolver import ResolvingParser
+from spec2sdk.client.generators import generate_client
+from spec2sdk.models.generators import generate_models
+from spec2sdk.models.imports import Import
+from spec2sdk.openapi.parsers import parse_spec
+from spec2sdk.openapi.resolver import ResolvingParser
 
 
 def format_file(path: Path):

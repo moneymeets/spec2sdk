@@ -121,19 +121,29 @@ components:
 
 ```python
 from pathlib import Path
+from typing import Sequence
 
-from spec2sdk.parsers.entities import DataType, StringDataType
-from spec2sdk.generators.converters import converters
-from spec2sdk.generators.entities import PythonType
-from spec2sdk.generators.predicates import is_instance
-from spec2sdk.generators.imports import Import
-from spec2sdk.generators.models.entities import TypeRenderer
-from spec2sdk.generators.models.renderers import render_root_model, renderers
+from spec2sdk.openapi.entities import DataType, StringDataType
+from spec2sdk.models.converters import converters, get_common_fields
+from spec2sdk.models.entities import PythonType
+from spec2sdk.models.imports import Import
 from spec2sdk.main import generate
 
 
-class EmailPythonType(PythonType):
-    pass
+class EmailType(PythonType):
+    @property
+    def type_hint(self) -> str:
+        return self.name or "EmailStr"
+
+    @property
+    def imports(self) -> Sequence[Import]:
+        return (
+            Import(name="EmailStr", package="pydantic"),
+            *((Import(name="RootModel", package="pydantic"),) if self.name else ()),
+        )
+
+    def render(self) -> str:
+        return f"{self.name} = RootModel[EmailStr]" if self.name else ""
 
 
 def is_email_format(data_type: DataType) -> bool:
@@ -141,22 +151,8 @@ def is_email_format(data_type: DataType) -> bool:
 
 
 @converters.register(predicate=is_email_format)
-def convert_email_field(data_type: StringDataType) -> EmailPythonType:
-    return EmailPythonType(
-        name=None,
-        type_hint="EmailStr",
-        description=data_type.description,
-        default_value=data_type.default_value,
-    )
-
-
-@renderers.register(predicate=is_instance(EmailPythonType))
-def render_email_field(py_type: EmailPythonType) -> TypeRenderer:
-    return render_root_model(
-        py_type,
-        extra_imports=(Import(name="EmailStr", package="pydantic"),),
-        content="EmailStr",
-    )
+def convert_email_field(data_type: StringDataType) -> EmailType:
+    return EmailType(**get_common_fields(data_type))
 
 
 if __name__ == "__main__":
