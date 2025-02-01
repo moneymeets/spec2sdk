@@ -139,11 +139,10 @@ class EmailType(PythonType):
     def imports(self) -> Sequence[Import]:
         return (
             Import(name="EmailStr", package="pydantic"),
-            *((Import(name="RootModel", package="pydantic"),) if self.name else ()),
         )
 
     def render(self) -> str:
-        return f"{self.name} = RootModel[EmailStr]" if self.name else ""
+        return f"type {self.name} = EmailStr" if self.name else ""
 
 
 def is_email_format(data_type: DataType) -> bool:
@@ -167,4 +166,53 @@ from pydantic import EmailStr, Field
 class User(Model):
     name: str | None = Field(default=None)
     email: EmailStr | None = Field(default=None)
+```
+
+# Writing HTTP client
+
+HTTP client should conform to the `HTTPClientProtocol` which can be found in the generated `api_client.py`. Below is an example of the HTTP client implemented using `httpx` to handle HTTP requests.
+```python
+from http import HTTPMethod, HTTPStatus
+from typing import Any, Mapping
+from urllib.parse import urlencode
+
+import httpx
+from httpx._types import AuthTypes, TimeoutTypes
+
+
+class HTTPClient:
+    def __init__(self, *, base_url: str, auth: AuthTypes | None = None, timeout: TimeoutTypes | None = None, **kwargs):
+        self._http_client = httpx.Client(auth=auth, base_url=base_url, timeout=timeout, **kwargs)
+
+    def build_url(self, path: str, query: Mapping[str, Any] | None = None) -> str:
+        if query is None:
+            return path
+
+        return f"{path}?{urlencode(query, doseq=True)}"
+
+    def send_request(
+        self,
+        method: HTTPMethod,
+        url: str,
+        accept: str | None = None,
+        content_type: str | None = None,
+        content: bytes | None = None,
+        expected_status_code: HTTPStatus = HTTPStatus.OK,
+    ) -> bytes | None:
+        response = self._http_client.request(
+            method=method,
+            url=url,
+            content=content,
+            headers=content_type and {"Content-Type": content_type},
+        )
+
+        if response.status_code != expected_status_code:
+            raise Exception(
+                f"Unexpected status code for {method} {url}: {response.status_code}.",
+            )
+
+        if (accept is not None) and (accept not in (response_content_type := response.headers.get("Content-Type", ""))):
+            raise Exception(f"Expected {accept}, got {response_content_type}.")
+
+        return response.content
 ```
