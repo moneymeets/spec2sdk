@@ -12,7 +12,7 @@ from spec2sdk.openapi.resolver import ResolvingParser
 TEST_DATA_DIR = Path(__file__).parent / "test_data"
 
 
-@pytest.mark.parametrize("test_data_name", ("local_references", "remote_references"))
+@pytest.mark.parametrize("test_data_name", ("local_references", "remote_references", "references_with_siblings"))
 def test_resolve_references(test_data_name: str):
     data_dir = TEST_DATA_DIR / test_data_name
     spec_path = data_dir / "input" / "api.yml"
