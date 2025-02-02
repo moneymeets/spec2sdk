@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Any, ClassVar, Sequence
+from typing import Any, ClassVar, Final, Sequence
 from urllib.parse import urldefrag, urljoin
 from urllib.request import urlopen
 
@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict
 
 from spec2sdk.openapi.exceptions import CircularReference
 
-SCHEMA_NAME_FIELD = "x-schema-name"
+SCHEMA_NAME_FIELD: Final[str] = "x-schema-name"
 
 
 class SchemaLoader(BaseModel):

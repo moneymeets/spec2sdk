@@ -1,4 +1,4 @@
-from typing import Callable, TypeVar
+from typing import Any, Callable, TypeVar
 
 from pydantic import BaseModel
 
@@ -39,7 +39,7 @@ class Registry:
 
         return inner
 
-    def convert(self, data: InputType) -> OutputType:
+    def convert(self, data) -> Any:
         for converter in reversed(self.converters):
             if converter.predicate(data):
                 return converter.convert(data)

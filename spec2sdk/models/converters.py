@@ -192,7 +192,7 @@ def convert_literal(data_type: DataType) -> LiteralType:
         name=None,
         description=data_type.description,
         default_value=data_type.default_value,
-        literals=tuple(enumerator.value for enumerator in data_type.enumerators),
+        literals=tuple(enumerator.value for enumerator in data_type.enumerators or ()),
     )
 
 

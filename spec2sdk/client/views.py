@@ -120,7 +120,7 @@ class RequestBodyView:
         return make_variable_name(converters.convert(self.__request_body.content.data_type).name)
 
     @property
-    def description(self) -> str:
+    def description(self) -> str | None:
         return self.__request_body.description
 
     @property
@@ -191,7 +191,7 @@ class EndpointView:
         return PathView(self.__endpoint.path)
 
     @property
-    def summary(self) -> str:
+    def summary(self) -> str | None:
         return self.__endpoint.summary
 
     @property
