@@ -240,11 +240,14 @@ def parse_spec(schema: dict) -> Specification:
                         ),
                     )
 
+            if "operationId" not in operation:
+                raise ParserError(f"operationId is missing: {method=} {path=}")
+
             endpoints.append(
                 Endpoint(
                     path=Path(path=path, parameters=parameters),
                     method=method,
-                    operation_id=operation.get("operationId"),
+                    operation_id=operation["operationId"],
                     summary=operation.get("summary"),
                     request_body=request_body,
                     responses=tuple(responses),

@@ -106,7 +106,7 @@ class Response(Model):
 class Endpoint(Model):
     path: Path
     method: str
-    operation_id: str | None
+    operation_id: str
     summary: str | None
     request_body: RequestBody | None
     responses: Sequence[Response]
