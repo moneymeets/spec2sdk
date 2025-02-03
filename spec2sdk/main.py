@@ -2,7 +2,6 @@ import argparse
 import shutil
 import subprocess
 from pathlib import Path
-from urllib.parse import urlparse
 
 from openapi_spec_validator import validate
 
@@ -29,8 +28,8 @@ def format_file(path: Path):
     run_formatter("ruff check --fix")
 
 
-def generate(url: str, output_dir: Path):
-    schema = ResolvingParser().parse(url=url)
+def generate(schema_url: str, output_dir: Path):
+    schema = ResolvingParser().parse(schema_url=schema_url)
     validate(schema)
     spec = parse_spec(schema)
 
@@ -52,21 +51,27 @@ def generate(url: str, output_dir: Path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input",
-        type=str,
-        help="File path or URL to the OpenAPI specification file in the YAML format",
-        required=True,
-    )
-    parser.add_argument(
         "--output-dir",
         type=Path,
         help="Path to the output directory where the generated code will be written to",
         required=True,
     )
 
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "--schema-path",
+        type=Path,
+        help="File path to the OpenAPI specification file in YAML format",
+    )
+    group.add_argument(
+        "--schema-url",
+        type=str,
+        help="URL of the OpenAPI specification file in YAML format",
+    )
+
     args = parser.parse_args()
     generate(
-        url=Path(args.input).absolute().as_uri() if urlparse(args.input).scheme == "" else args.input,
+        schema_url=args.schema_path.absolute().as_uri() if args.schema_path else args.schema_url,
         output_dir=args.output_dir,
     )
 
