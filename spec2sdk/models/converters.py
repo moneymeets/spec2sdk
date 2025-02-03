@@ -116,8 +116,10 @@ def convert_one_of(data_type: OneOfDataType | AnyOfDataType) -> UnionType:
 
 @converters.register(predicate=is_instance(AllOfDataType))
 def convert_all_of(data_type: AllOfDataType) -> ModelType:
-    if not all(isinstance(inner_data_type, ObjectDataType) for inner_data_type in data_type.data_types):
-        raise TypeError("Non-object data types in allOf is not supported")
+    if not all(
+        isinstance(inner_data_type, (ObjectDataType, AllOfDataType)) for inner_data_type in data_type.data_types
+    ):
+        raise TypeError("Non-object data types in allOf are not supported")
 
     nameless_inner_data_types = tuple(
         inner_data_type for inner_data_type in data_type.data_types if inner_data_type.name is None
