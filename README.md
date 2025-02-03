@@ -124,7 +124,7 @@ from pathlib import Path
 from typing import Sequence
 
 from spec2sdk.openapi.entities import DataType, StringDataType
-from spec2sdk.models.converters import converters, get_common_fields
+from spec2sdk.models.converters import converters, convert_common_fields
 from spec2sdk.models.entities import PythonType
 from spec2sdk.models.imports import Import
 from spec2sdk.main import generate
@@ -151,7 +151,7 @@ def is_email_format(data_type: DataType) -> bool:
 
 @converters.register(predicate=is_email_format)
 def convert_email_field(data_type: StringDataType) -> EmailType:
-    return EmailType(**get_common_fields(data_type))
+    return EmailType(**convert_common_fields(data_type))
 
 
 if __name__ == "__main__":
