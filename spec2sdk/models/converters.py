@@ -42,7 +42,7 @@ class CommonFields(TypedDict):
     default_value: Any
 
 
-def get_common_fields(data_type: DataType) -> CommonFields:
+def convert_common_fields(data_type: DataType) -> CommonFields:
     return CommonFields(
         name=make_class_name(data_type.name) if data_type.name else None,
         description=data_type.description,
@@ -52,28 +52,28 @@ def get_common_fields(data_type: DataType) -> CommonFields:
 
 @converters.register(predicate=is_instance(StringDataType))
 def convert_string(data_type: StringDataType) -> StringType:
-    return StringType(**get_common_fields(data_type))
+    return StringType(**convert_common_fields(data_type))
 
 
 @converters.register(predicate=is_instance(IntegerDataType))
 def convert_integer(data_type: IntegerDataType) -> IntegerType:
-    return IntegerType(**get_common_fields(data_type))
+    return IntegerType(**convert_common_fields(data_type))
 
 
 @converters.register(predicate=is_instance(NumberDataType))
 def convert_number(data_type: NumberDataType) -> FloatType:
-    return FloatType(**get_common_fields(data_type))
+    return FloatType(**convert_common_fields(data_type))
 
 
 @converters.register(predicate=is_instance(BooleanDataType))
 def convert_boolean(data_type: BooleanDataType) -> BooleanType:
-    return BooleanType(**get_common_fields(data_type))
+    return BooleanType(**convert_common_fields(data_type))
 
 
 @converters.register(predicate=is_instance(ObjectDataType))
 def convert_object(data_type: ObjectDataType) -> ModelType:
     return ModelType(
-        **get_common_fields(data_type),
+        **convert_common_fields(data_type),
         base_models=(),
         fields=tuple(
             ModelField(
@@ -99,7 +99,7 @@ def convert_object(data_type: ObjectDataType) -> ModelType:
 @converters.register(predicate=is_instance(ArrayDataType))
 def convert_array(data_type: ArrayDataType) -> ListType:
     return ListType(
-        **get_common_fields(data_type),
+        **convert_common_fields(data_type),
         inner_py_type=converters.convert(data_type.item_type),
     )
 
@@ -109,7 +109,7 @@ def convert_one_of(data_type: OneOfDataType | AnyOfDataType) -> UnionType:
     inner_py_types = tuple(map(converters.convert, data_type.data_types))
 
     return UnionType(
-        **get_common_fields(data_type),
+        **convert_common_fields(data_type),
         inner_py_types=inner_py_types,
     )
 
@@ -192,7 +192,7 @@ def convert_literal(data_type: DataType) -> LiteralType:
         name=None,
         description=data_type.description,
         default_value=data_type.default_value,
-        literals=tuple(enumerator.value for enumerator in data_type.enumerators),
+        literals=tuple(enumerator.value for enumerator in data_type.enumerators or ()),
     )
 
 

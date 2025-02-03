@@ -4,37 +4,34 @@ from typing import Any, Sequence
 from spec2sdk.base import Model
 
 
-class Enumerator(Model):
+class Enumerator[T](Model):
     name: str | None
-    value: Any
+    value: T
 
 
-class DataType(Model):
+class DataType[T](Model):
     name: str | None
     description: str | None
-    default_value: Any | None
-    enumerators: Sequence[Enumerator] | None
+    default_value: T | None
+    enumerators: Sequence[Enumerator[T]] | None
     is_nullable: bool
 
 
-class IntegerDataType(DataType):
-    default_value: int | None
+class IntegerDataType(DataType[int]):
     format: str | None
 
 
-class NumberDataType(DataType):
-    default_value: float | None
+class NumberDataType(DataType[float]):
     format: str | None
 
 
-class StringDataType(DataType):
-    default_value: str | None
+class StringDataType(DataType[str]):
     format: str | None
     pattern: str | None
 
 
-class BooleanDataType(DataType):
-    default_value: bool | None
+class BooleanDataType(DataType[bool]):
+    pass
 
 
 class ObjectProperty(Model):
@@ -109,7 +106,7 @@ class Response(Model):
 class Endpoint(Model):
     path: Path
     method: str
-    operation_id: str | None
+    operation_id: str
     summary: str | None
     request_body: RequestBody | None
     responses: Sequence[Response]

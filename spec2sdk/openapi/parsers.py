@@ -1,5 +1,5 @@
 from http import HTTPMethod
-from typing import Any, Callable, Sequence, TypedDict
+from typing import Any, Callable, Final, Sequence, TypedDict
 
 from ..registry import Registry
 from .entities import (
@@ -27,16 +27,19 @@ from .exceptions import ParserError
 from .predicates import contains, type_equals
 from .resolver import SCHEMA_NAME_FIELD
 
+ENUM_VARNAMES_FIELD: Final[str] = "x-enum-varnames"
+
 parsers = Registry()
 
 
 def parse_enumerators[I, O](schema: dict, type_parser: Callable[[I], O] | None = None) -> Sequence[Enumerator] | None:
     if enum_member_values := schema.get("enum"):
-        enum_member_names = schema.get("x-enum-varnames", (None,) * len(enum_member_values))
+        enum_member_names = schema.get(ENUM_VARNAMES_FIELD, (None,) * len(enum_member_values))
 
         if len(enum_member_names) != len(enum_member_values):
-            raise ValueError(
-                f"{enum_member_values}: enum values count do not match the number of `x-enum-varnames` names",
+            raise ParserError(
+                f"Number of enum values does not match the number of '{ENUM_VARNAMES_FIELD}' names: "
+                f"{enum_member_values=}, {enum_member_names=}",
             )
 
         return tuple(
@@ -237,11 +240,14 @@ def parse_spec(schema: dict) -> Specification:
                         ),
                     )
 
+            if "operationId" not in operation:
+                raise ParserError(f"operationId is missing: {method=} {path=}")
+
             endpoints.append(
                 Endpoint(
                     path=Path(path=path, parameters=parameters),
                     method=method,
-                    operation_id=operation.get("operationId"),
+                    operation_id=operation["operationId"],
                     summary=operation.get("summary"),
                     request_body=request_body,
                     responses=tuple(responses),
@@ -258,7 +264,7 @@ def get_root_data_types(spec: Specification) -> Sequence[DataType]:
     Returns the only data types used directly in the parameters, request bodies and responses.
     Duplicates are removed from the result.
     """
-    data_types = set()
+    data_types: set[DataType] = set()
 
     for endpoint in spec.endpoints:
         data_types.update(tuple(parameter.data_type for parameter in endpoint.path.parameters))
