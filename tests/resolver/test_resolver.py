@@ -18,7 +18,7 @@ def test_resolve_references(test_data_name: str):
     spec_path = data_dir / "input" / "api.yml"
     expected_schema = json.loads((data_dir / "expected_output" / "schema.json").read_text())
 
-    assert ResolvingParser().parse(url=spec_path.absolute().as_uri()) == expected_schema
+    assert ResolvingParser().parse(schema_url=spec_path.absolute().as_uri()) == expected_schema
 
 
 def test_url_references():
@@ -37,7 +37,7 @@ def test_url_references():
 
 def test_circular_reference():
     with pytest.raises(CircularReference):
-        ResolvingParser().parse(url=(TEST_DATA_DIR / "circular_reference" / "api.yml").absolute().as_uri())
+        ResolvingParser().parse(schema_url=(TEST_DATA_DIR / "circular_reference" / "api.yml").absolute().as_uri())
 
 
 def test_schema_cache():
@@ -45,5 +45,5 @@ def test_schema_cache():
         return Path(urlparse(url).path).read_text()
 
     with patch.object(resolver, "urlopen", side_effect=mock_response) as mock_urlopen:
-        ResolvingParser().parse(url=(TEST_DATA_DIR / "schema_cache" / "api.yml").absolute().as_uri())
+        ResolvingParser().parse(schema_url=(TEST_DATA_DIR / "schema_cache" / "api.yml").absolute().as_uri())
         assert mock_urlopen.call_count == 2

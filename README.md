@@ -2,7 +2,8 @@
 
 ## From command line
 
-`spec2sdk --input path/to/api.yml --output-dir path/to/output-dir/`
+- Local specification `spec2sdk --schema-path path/to/api.yml --output-dir path/to/output-dir/`
+- Remove specification `spec2sdk --schema-url https://example.com/path/to/api.yml --output-dir path/to/output-dir/`
 
 ## From the code
 
@@ -10,7 +11,11 @@
 from pathlib import Path
 from spec2sdk.main import generate
 
-generate(url=Path("path/to/api.yml").absolute().as_uri(), output_dir=Path("path/to/output-dir/"))
+# Local specification
+generate(schema_url=Path("path/to/api.yml").absolute().as_uri(), output_dir=Path("path/to/output-dir/"))
+
+# Remove specification
+generate(schema_url="https://example.com/path/to/api.yml", output_dir=Path("path/to/output-dir/"))
 ```
 
 # Open API specification requirements
@@ -155,7 +160,7 @@ def convert_email_field(data_type: StringDataType) -> EmailType:
 
 
 if __name__ == "__main__":
-    generate(url=Path("api.yml").absolute().as_uri(), output_dir=Path("output"))
+    generate(schema_url=Path("api.yml").absolute().as_uri(), output_dir=Path("output"))
 ```
 
 ## Output

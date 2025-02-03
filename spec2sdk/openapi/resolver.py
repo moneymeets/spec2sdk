@@ -77,8 +77,8 @@ class ResolvingParser:
             else {key: resolve_value(value) for key, value in schema.items()}
         )
 
-    def parse(self, url: str) -> dict:
-        schema_loader = SchemaLoader(schema_url=url)
+    def parse(self, schema_url: str) -> dict:
+        schema_loader = SchemaLoader(schema_url=schema_url)
 
         return self._resolve_schema(
             schema_loader=schema_loader,
