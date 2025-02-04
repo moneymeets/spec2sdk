@@ -11,6 +11,16 @@ from spec2sdk.templating import create_jinja_environment
 
 
 def get_imports(py_types: Sequence[PythonType], models_import: Import) -> Sequence[Import]:
+    """
+    Returns imports for each type in the following cases:
+    - if type has a name, it can be imported directly from the models file
+      (e.g. `from models import User`)
+    - if type doesn't have a name, import types used in the type definition
+      (e.g. `from typing import Literal` for `Literal["json", "xml"]`)
+    - if type doesn't have a name, import types for inner types
+      (e.g. `from models import Product` for `list[Product]`)
+    """
+
     def get_importable_type_names(py_type: PythonType) -> Sequence[str]:
         return (
             (py_type.name,)
@@ -27,7 +37,8 @@ def get_imports(py_types: Sequence[PythonType], models_import: Import) -> Sequen
             models_import.model_copy(update={"name": name})
             for py_type in py_types
             for name in get_importable_type_names(py_type)
-        },
+        }
+        | {import_ for py_type in py_types if not py_type.name for import_ in py_type.imports},
     )
 
 
