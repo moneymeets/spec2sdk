@@ -164,21 +164,17 @@ class StringType(PythonType):
         return f"type {self.name} = str" if self.name else ""
 
 
-class FileType(PythonType):
+class BinaryType(PythonType):
     @property
     def type_hint(self) -> str:
-        return self.name
+        return self.name or "bytes"
 
     @property
     def imports(self) -> Sequence[Import]:
-        return (Import(name="NamedTuple", package="typing"),)
+        return ()
 
     def render(self) -> str:
-        return (
-            create_jinja_environment(templates_path=Path(__file__).parent / "templates")
-            .get_template("file.j2")
-            .render()
-        )
+        return f"type {self.name} = bytes" if self.name else ""
 
 
 class ModelField(Model):

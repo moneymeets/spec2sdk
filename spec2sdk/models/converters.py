@@ -1,10 +1,10 @@
 from typing import Any, TypedDict
 
 from spec2sdk.models.entities import (
+    BinaryType,
     BooleanType,
     EnumMember,
     EnumType,
-    FileType,
     FloatType,
     IntegerType,
     ListType,
@@ -180,12 +180,8 @@ def convert_str_enum(data_type: StringDataType) -> StrEnumType:
 
 
 @converters.register(predicate=is_binary_format)
-def convert_binary(data_type: StringDataType) -> FileType:
-    return FileType(
-        name="File",
-        description=data_type.description,
-        default_value=data_type.default_value,
-    )
+def convert_binary(data_type: StringDataType) -> BinaryType:
+    return BinaryType(**convert_common_fields(data_type))
 
 
 @converters.register(predicate=is_literal)
