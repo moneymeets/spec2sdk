@@ -1,3 +1,4 @@
+from collections import Counter
 from graphlib import TopologicalSorter
 from pathlib import Path
 from typing import Sequence
@@ -23,10 +24,19 @@ def unwrap_py_types(py_types: Sequence[PythonType]) -> Sequence[PythonType]:
     )
 
 
+def get_duplicate_type_names(py_types: Sequence[PythonType]) -> Sequence[str]:
+    type_names = tuple(py_type.name for py_type in py_types if py_type.name is not None)
+    duplicate_type_names = Counter(type_names) - Counter(set(type_names))
+    return tuple(duplicate_type_names.keys())
+
+
 def generate_models(spec: Specification) -> str:
     root_data_types = get_root_data_types(spec)
     root_py_types = tuple(map(converters.convert, root_data_types))
     all_py_types = unwrap_py_types(root_py_types)
+
+    if duplicate_type_names := get_duplicate_type_names(all_py_types):
+        raise Exception(f"Found duplicate type names: {', '.join(duplicate_type_names)}")
 
     # Types must be sorted in the order of defining their dependencies
     topological_sorter = TopologicalSorter({py_type: py_type.dependency_types for py_type in all_py_types})

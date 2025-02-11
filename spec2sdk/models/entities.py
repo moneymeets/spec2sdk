@@ -28,9 +28,6 @@ class PythonType(Model):
     def dependency_types(self) -> Sequence["PythonType"]:
         return ()
 
-    def __hash__(self):
-        return hash((self.__class__, self.name or self.type_hint))
-
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, self.__class__):
             return self.name == other.name
