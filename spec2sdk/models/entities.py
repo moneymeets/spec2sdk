@@ -28,12 +28,6 @@ class PythonType(Model):
     def dependency_types(self) -> Sequence["PythonType"]:
         return ()
 
-    def __eq__(self, other: Any) -> bool:
-        if isinstance(other, self.__class__):
-            return self.name == other.name
-        else:
-            return self.model_dump() == other
-
 
 class LiteralType(PythonType):
     literals: Sequence[Any]
