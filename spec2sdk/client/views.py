@@ -99,6 +99,10 @@ class ResponseView:
         )
 
     @property
+    def has_content(self) -> bool:
+        return self.__response.content is not None
+
+    @property
     def media_type(self) -> str | None:
         return self.__response.content.media_type if self.__response.content else None
 

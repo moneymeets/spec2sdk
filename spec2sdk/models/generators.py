@@ -30,7 +30,7 @@ def get_duplicate_type_names(py_types: Sequence[PythonType]) -> Sequence[str]:
     return tuple(duplicate_type_names.keys())
 
 
-def generate_models(spec: Specification) -> str:
+def generate_models(spec: Specification, output_dir: Path) -> Path:
     root_data_types = get_root_data_types(spec)
     root_py_types = tuple(map(converters.convert, root_data_types))
     all_py_types = unwrap_py_types(root_py_types)
@@ -64,4 +64,7 @@ def generate_models(spec: Specification) -> str:
     # Render types with a name
     content += "\n".join(py_type.render() for py_type in sorted_py_types if py_type.name is not None)
 
-    return content
+    models_path = output_dir.joinpath("models.py")
+    models_path.write_text(content)
+
+    return models_path
