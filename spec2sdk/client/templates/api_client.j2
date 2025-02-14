@@ -1,0 +1,33 @@
+from http import HTTPMethod, HTTPStatus
+from types import NoneType
+from typing import Any, Mapping, Protocol, Type
+
+from pydantic import BaseModel
+from typing_extensions import TypeAliasType
+
+from .http_client import HTTPResponse
+
+
+class APIClientResponse[T](BaseModel):
+    http_response: HTTPResponse
+    data: T
+
+
+class APIClientProtocol(Protocol):
+    def serialize[T](self, *, data: T, data_type: Type[T] | TypeAliasType, content_type: str | None) -> bytes: ...
+
+    def deserialize[T](self, *, data: bytes | None, data_type: Type[T] | TypeAliasType, content_type: str | None) -> T: ...
+
+    def send_request[I, O](
+        self,
+        *,
+        method: HTTPMethod,
+        path: str,
+        query: Mapping[str, Any] | None = None,
+        content_type: str | None = None,
+        data: I | None = None,
+        data_type: Type[I] | TypeAliasType = NoneType,
+        accept: str | None = None,
+        response_type: Type[O] | TypeAliasType = NoneType,
+        expected_status_code: HTTPStatus = HTTPStatus.OK,
+    ) -> APIClientResponse[O]: ...

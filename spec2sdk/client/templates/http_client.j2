@@ -1,0 +1,21 @@
+from http import HTTPMethod, HTTPStatus
+from typing import Protocol, Sequence
+
+from pydantic import BaseModel
+
+
+class HTTPRequest(BaseModel):
+    method: HTTPMethod
+    url: str
+    headers: Sequence[tuple[str, str]]
+    content: bytes | None = None
+
+
+class HTTPResponse(BaseModel):
+    status_code: HTTPStatus
+    content: bytes | None
+    headers: Sequence[tuple[str, str]]
+
+
+class HTTPClientProtocol(Protocol):
+    def send_request(self, *, request: HTTPRequest) -> HTTPResponse: ...

@@ -42,20 +42,23 @@ def get_imports(py_types: Sequence[PythonType], models_import: Import) -> Sequen
     )
 
 
-def generate_client(spec: Specification, models_import: Import) -> str:
+def generate_client(spec: Specification, models_import: Import, output_dir: Path):
     root_data_types = get_root_data_types(spec)
     root_python_types = tuple(map(converters.convert, root_data_types))
     imports = get_imports(py_types=root_python_types, models_import=models_import)
+    jinja_environment = create_jinja_environment(templates_path=Path(__file__).parent / "templates")
 
-    return (
-        create_jinja_environment(templates_path=Path(__file__).parent / "templates")
-        .get_template("client.j2")
-        .render(
-            imports=render_imports(imports),
-            endpoints=tuple(
-                EndpointView(endpoint=endpoint, response=response)
-                for endpoint in spec.endpoints
-                for response in endpoint.responses
-            ),
-        )
+    api_content = jinja_environment.get_template("api.j2").render(
+        imports=render_imports(imports),
+        endpoints=tuple(
+            EndpointView(endpoint=endpoint, response=response)
+            for endpoint in spec.endpoints
+            for response in endpoint.responses
+        ),
     )
+    output_dir.joinpath("api.py").write_text(api_content)
+
+    for filename in ("http_client", "api_client"):
+        output_dir.joinpath(f"{filename}.py").write_text(
+            jinja_environment.get_template(f"{filename}.j2").render(),
+        )

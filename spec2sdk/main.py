@@ -12,7 +12,7 @@ from spec2sdk.openapi.parsers import parse_spec
 from spec2sdk.openapi.resolver import ResolvingParser
 
 
-def format_file(path: Path):
+def format_files(path: Path):
     def run_formatter(formatter: str):
         print(f"Running {formatter} on {path}")
         subprocess.run(f"{formatter} {path}", shell=True, check=True)
@@ -39,13 +39,10 @@ def generate(schema_url: str, output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
     output_dir.joinpath("__init__.py").write_text("")
 
-    models_path = output_dir.joinpath("models.py")
-    models_path.write_text(generate_models(spec=spec))
-    format_file(models_path)
+    models_path = generate_models(spec=spec, output_dir=output_dir)
+    generate_client(spec=spec, models_import=Import(name="", package=f".{models_path.stem}"), output_dir=output_dir)
 
-    client_path = output_dir.joinpath("api_client.py")
-    client_path.write_text(generate_client(spec=spec, models_import=Import(name="", package=f".{models_path.stem}")))
-    format_file(client_path)
+    format_files(output_dir)
 
 
 def main():
