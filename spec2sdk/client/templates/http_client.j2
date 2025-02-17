@@ -13,7 +13,7 @@ class HTTPRequest(BaseModel):
 
 class HTTPResponse(BaseModel):
     status_code: HTTPStatus
-    content: bytes | None
+    content: bytes
     headers: Sequence[tuple[str, str]]
 
 
