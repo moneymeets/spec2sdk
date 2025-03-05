@@ -205,7 +205,7 @@ class ModelType(PythonType):
 
     def render(self) -> str:
         def split_long_lines(s: str) -> str:
-            return '"' + '""'.join(line.replace('"', r"\"") for line in textwrap.wrap(s, width=80)) + '"'
+            return '"' + ' ""'.join(line.replace('"', r"\"") for line in textwrap.wrap(s, width=80)) + '"'
 
         def create_model_field_view(field: ModelField) -> ModelFieldView:
             attrs = []
