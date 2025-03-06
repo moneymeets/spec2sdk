@@ -1,13 +1,11 @@
-[tool.poetry]
+[project]
 name = "spec2sdk"
-version = "1.1+SNAPSHOT"
+dynamic = [ "version" ]
 description = "Generate Pydantic models and API client code from OpenAPI 3.x specifications"
-authors = ["moneymeets <service@moneymeets.com>"]
-readme = "README.md"
-repository = "https://github.com/moneymeets/spec2sdk"
-packages = [
-    { include="spec2sdk" },
+authors = [
+    { name = "moneymeets", email = "service@moneymeets.com" },
 ]
+readme = "README.md"
 keywords = ["openapi", "pydantic", "code-generator", "openapi-codegen"]
 license = "MIT"
 classifiers = [
@@ -18,10 +16,21 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "License :: OSI Approved :: MIT License",
 ]
+requires-python = ">=3.12"
+
+[project.urls]
+repository = "https://github.com/moneymeets/spec2sdk"
+
+[project.scripts]
+spec2sdk = "spec2sdk.main:main"
+
+[tool.poetry]
+version = "1.1+SNAPSHOT"
+packages = [
+    { include="spec2sdk" },
+]
 
 [tool.poetry.dependencies]
-python = "~3.12"
-
 jinja2 = "*"
 openapi-spec-validator = "*"
 pydantic = "~2"
@@ -36,9 +45,6 @@ pytest-cov = "*"
 branch = true
 source = ["."]
 omit = ["**/tests/**"]
-
-[tool.poetry.scripts]
-spec2sdk = "spec2sdk.main:main"
 
 [build-system]
 requires = ["poetry-core"]
