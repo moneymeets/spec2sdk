@@ -3,7 +3,7 @@
 ## From command line
 
 - Local specification `spec2sdk --schema-path path/to/api.yml --output-dir path/to/output-dir/`
-- Remove specification `spec2sdk --schema-url https://example.com/path/to/api.yml --output-dir path/to/output-dir/`
+- Remote specification `spec2sdk --schema-url https://example.com/path/to/api.yml --output-dir path/to/output-dir/`
 
 ## From the code
 
@@ -14,7 +14,7 @@ from spec2sdk.main import generate
 # Local specification
 generate(schema_url=Path("path/to/api.yml").absolute().as_uri(), output_dir=Path("path/to/output-dir/"))
 
-# Remove specification
+# Remote specification
 generate(schema_url="https://example.com/path/to/api.yml", output_dir=Path("path/to/output-dir/"))
 ```
 
@@ -85,7 +85,7 @@ Variable names for enums can be specified by the `x-enum-varnames` field.
 ### Input
 
 ```yaml
-components: 
+components:
   schemas:
     Direction:
       x-enum-varnames: [ NORTH, SOUTH, WEST, EAST ]
@@ -112,8 +112,8 @@ Register Python converters and renderers to implement custom types.
 ## Input
 
 ```yaml
-components: 
-  schemas: 
+components:
+  schemas:
     User:
       type: object
       properties:
