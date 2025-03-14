@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from openapi_spec_validator import validate_v3_spec
+from openapi_spec_validator import validate
 
 from spec2sdk.client.generators import generate_client
 from spec2sdk.models.generators import generate_models
@@ -30,7 +30,7 @@ def format_files(path: Path):
 
 def generate(schema_url: str, output_dir: Path):
     schema = ResolvingParser().parse(schema_url=schema_url)
-    validate_v3_spec(schema)
+    validate(schema)
     spec = parse_spec(schema)
 
     if output_dir.exists():
