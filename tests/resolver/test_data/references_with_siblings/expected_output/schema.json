@@ -2,6 +2,7 @@
   "components": {
     "schemas": {
       "HealthStatus": {
+        "summary": "Schema summary",
         "description": "Schema description",
         "properties": {
           "status": {
@@ -16,7 +17,7 @@
     "title": "Example API",
     "version": "1.0"
   },
-  "openapi": "3.0.0",
+  "openapi": "3.1.1",
   "paths": {
     "/health": {
       "get": {
@@ -26,6 +27,7 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "summary": "Schema summary",
                   "description": "Schema description",
                   "properties": {
                     "status": {
