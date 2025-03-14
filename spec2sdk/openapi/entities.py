@@ -1,4 +1,5 @@
 from enum import StrEnum, auto
+from types import NoneType
 from typing import Any, Sequence
 
 from spec2sdk.base import Model
@@ -14,7 +15,6 @@ class DataType[T](Model):
     description: str | None
     default_value: T | None
     enumerators: Sequence[Enumerator[T]] | None
-    is_nullable: bool
 
 
 class IntegerDataType(DataType[int]):
@@ -31,6 +31,10 @@ class StringDataType(DataType[str]):
 
 
 class BooleanDataType(DataType[bool]):
+    pass
+
+
+class NullDataType(DataType[NoneType]):
     pass
 
 

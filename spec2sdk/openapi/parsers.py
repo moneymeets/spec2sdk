@@ -12,6 +12,7 @@ from .entities import (
     Endpoint,
     Enumerator,
     IntegerDataType,
+    NullDataType,
     NumberDataType,
     ObjectDataType,
     ObjectProperty,
@@ -66,7 +67,6 @@ class CommonFields(TypedDict):
     description: str | None
     default_value: Any | None
     enumerators: Sequence[Enumerator] | None
-    is_nullable: bool
 
 
 def parse_common_fields[I, O](
@@ -78,7 +78,6 @@ def parse_common_fields[I, O](
         description=schema.get("description"),
         default_value=parse_default_value(schema, type_parser),
         enumerators=parse_enumerators(schema, type_parser),
-        is_nullable=schema.get("nullable") == "true",
     )
 
 
@@ -111,6 +110,13 @@ def parse_integer(schema: dict) -> IntegerDataType:
 def parse_boolean(schema: dict) -> BooleanDataType:
     return BooleanDataType(
         **parse_common_fields(schema=schema, type_parser=bool),
+    )
+
+
+@parsers.register(predicate=type_equals("null"))
+def parse_null(schema: dict) -> NullDataType:
+    return NullDataType(
+        **parse_common_fields(schema=schema),
     )
 
 
@@ -173,7 +179,7 @@ def parse_spec(schema: dict) -> Specification:
 
     for path, path_item in schema.get("paths", {}).items():
         # Path item can have different fields, not just HTTP method names
-        # https://spec.openapis.org/oas/v3.0.0.html#fixed-fields-6
+        # https://spec.openapis.org/oas/v3.1.1.html#path-item-object
         operations = tuple(
             (field_name, field_value)
             for field_name, field_value in path_item.items()

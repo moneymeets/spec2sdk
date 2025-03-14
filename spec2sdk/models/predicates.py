@@ -24,7 +24,3 @@ def is_binary_format(data_type: DataType) -> bool:
 
 def is_literal(data_type: DataType) -> bool:
     return data_type.name is None and data_type.enumerators is not None
-
-
-def is_optional(data_type: DataType) -> bool:
-    return data_type.is_nullable

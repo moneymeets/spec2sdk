@@ -1,5 +1,5 @@
 from http import HTTPMethod, HTTPStatus
-from types import NoneType
+from types import NoneType, UnionType
 from typing import Any, Mapping, Protocol, Type
 
 from pydantic import BaseModel
@@ -28,6 +28,6 @@ class APIClientProtocol(Protocol):
         data: I | None = None,
         data_type: Type[I] | TypeAliasType = NoneType,
         accept: str | None = None,
-        response_type: Type[O] | TypeAliasType = NoneType,
+        response_type: Type[O] | UnionType | TypeAliasType = NoneType,
         expected_status_code: HTTPStatus = HTTPStatus.OK,
     ) -> APIClientResponse[O]: ...
