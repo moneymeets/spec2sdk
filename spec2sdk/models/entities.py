@@ -238,16 +238,14 @@ class ModelType(PythonType):
         )
 
 
-class OptionalType(PythonType):
-    inner_py_type: PythonType
-
+class NoneType(PythonType):
     @property
     def dependency_types(self) -> Sequence[PythonType]:
-        return (self.inner_py_type,)
+        return ()
 
     @property
     def type_hint(self) -> str:
-        return self.name or f"{self.inner_py_type.type_hint} | None"
+        return self.name or "None"
 
     @property
     def imports(self) -> Sequence[Import]:
@@ -255,8 +253,7 @@ class OptionalType(PythonType):
 
     def render(self) -> str:
         if self.name:
-            root_type = f"{self.inner_py_type.type_hint} | None"
-            return f"type {self.name} = {root_type}"
+            return f"type {self.name} = None"
         else:
             return ""
 

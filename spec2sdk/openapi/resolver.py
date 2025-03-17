@@ -68,10 +68,13 @@ class ResolvingParser:
 
             return self._resolved_references[reference_id]
 
-        # Object containing $ref cannot be extended with additional properties
-        # and any properties added SHALL be ignored.
-        # https://spec.openapis.org/oas/v3.0.0.html#reference-object
+        # Object containing $ref cannot be extended except for summary and description fields.
+        # Values of these fields can only be overridden if they are defined on the referenced object.
+        # https://spec.openapis.org/oas/v3.1.1.html#reference-object
         return (
+            # Currently, we don't separate properties defined on the referenced object from those
+            # defined on the object containing $ref. That's why we ignore summary and description fields,
+            # which can be overridden by the object containing $ref.
             resolve_reference(schema["$ref"])
             if "$ref" in schema
             else {key: resolve_value(value) for key, value in schema.items()}

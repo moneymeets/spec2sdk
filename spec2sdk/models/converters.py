@@ -11,13 +11,13 @@ from spec2sdk.models.entities import (
     LiteralType,
     ModelField,
     ModelType,
-    OptionalType,
+    NoneType,
     StrEnumType,
     StringType,
     UnionType,
 )
 from spec2sdk.models.identifiers import make_class_name, make_constant_name, make_variable_name
-from spec2sdk.models.predicates import is_binary_format, is_enum, is_instance, is_literal, is_optional, is_str_enum
+from spec2sdk.models.predicates import is_binary_format, is_enum, is_instance, is_literal, is_str_enum
 from spec2sdk.openapi.entities import (
     AllOfDataType,
     AnyOfDataType,
@@ -26,6 +26,7 @@ from spec2sdk.openapi.entities import (
     DataType,
     Enumerator,
     IntegerDataType,
+    NullDataType,
     NumberDataType,
     ObjectDataType,
     OneOfDataType,
@@ -80,7 +81,7 @@ def convert_object(data_type: ObjectDataType) -> ModelType:
                 name=make_variable_name(prop.name),
                 alias=prop.name,
                 type_hint=inner_py_type.type_hint,
-                description=inner_py_type.description,
+                description=None,
                 default_value=inner_py_type.default_value,
                 is_required=prop.is_required,
                 inner_py_type=inner_py_type,
@@ -88,7 +89,23 @@ def convert_object(data_type: ObjectDataType) -> ModelType:
             for prop in data_type.properties
             if (
                 inner_py_type := converters.convert(
-                    prop.data_type if prop.is_required else prop.data_type.model_copy(update={"is_nullable": True}),
+                    prop.data_type
+                    if prop.is_required
+                    else OneOfDataType(
+                        name=None,
+                        description=None,
+                        default_value=None,
+                        enumerators=None,
+                        data_types=(
+                            prop.data_type,
+                            NullDataType(
+                                name=None,
+                                description=None,
+                                default_value=None,
+                                enumerators=None,
+                            ),
+                        ),
+                    ),
                 )
             )
         ),
@@ -194,11 +211,10 @@ def convert_literal(data_type: DataType) -> LiteralType:
     )
 
 
-@converters.register(predicate=is_optional, priority=99)
-def convert_optional(data_type: DataType) -> OptionalType:
-    return OptionalType(
-        name=None,
+@converters.register(predicate=is_instance(NullDataType))
+def convert_none(data_type: NullDataType) -> NoneType:
+    return NoneType(
+        name=data_type.name,
         description=data_type.description,
         default_value=data_type.default_value,
-        inner_py_type=converters.convert(data_type.model_copy(update={"is_nullable": False})),
     )
