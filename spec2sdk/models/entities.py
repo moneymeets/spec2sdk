@@ -22,7 +22,11 @@ class PythonType(Model):
     def imports(self) -> Sequence[Import]: ...
 
     @abstractmethod
-    def render(self) -> str: ...
+    def render(self) -> str:
+        """
+        Returns rendered Python type. Method will only be called if type has a name.
+        """
+        ...
 
     @property
     def dependency_types(self) -> Sequence["PythonType"]:
@@ -41,7 +45,7 @@ class LiteralType(PythonType):
         return (Import(name="Literal", package="typing"),)
 
     def render(self) -> str:
-        return f"type {self.name} = {self.type_hint}" if self.name else ""
+        return f"type {self.name} = {self.type_hint}"
 
 
 class EnumMember(Model):
@@ -107,7 +111,7 @@ class IntegerType(PythonType):
         return ()
 
     def render(self) -> str:
-        return f"type {self.name} = int" if self.name else ""
+        return f"type {self.name} = int"
 
 
 class FloatType(PythonType):
@@ -122,7 +126,7 @@ class FloatType(PythonType):
         return ()
 
     def render(self) -> str:
-        return f"type {self.name} = float" if self.name else ""
+        return f"type {self.name} = float"
 
 
 class BooleanType(PythonType):
@@ -137,7 +141,7 @@ class BooleanType(PythonType):
         return ()
 
     def render(self) -> str:
-        return f"type {self.name} = bool" if self.name else ""
+        return f"type {self.name} = bool"
 
 
 class StringType(PythonType):
@@ -152,7 +156,7 @@ class StringType(PythonType):
         return ()
 
     def render(self) -> str:
-        return f"type {self.name} = str" if self.name else ""
+        return f"type {self.name} = str"
 
 
 class BinaryType(PythonType):
@@ -165,7 +169,7 @@ class BinaryType(PythonType):
         return ()
 
     def render(self) -> str:
-        return f"type {self.name} = bytes" if self.name else ""
+        return f"type {self.name} = bytes"
 
 
 class ModelField(Model):
@@ -252,10 +256,7 @@ class NoneType(PythonType):
         return ()
 
     def render(self) -> str:
-        if self.name:
-            return f"type {self.name} = None"
-        else:
-            return ""
+        return f"type {self.name} = None"
 
 
 class ListType(PythonType):
@@ -274,11 +275,8 @@ class ListType(PythonType):
         return ()
 
     def render(self) -> str:
-        if self.name:
-            root_type = f"list[{self.inner_py_type.type_hint}]"
-            return f"type {self.name} = {root_type}"
-        else:
-            return ""
+        root_type = f"list[{self.inner_py_type.type_hint}]"
+        return f"type {self.name} = {root_type}"
 
 
 class UnionType(PythonType):
@@ -297,8 +295,5 @@ class UnionType(PythonType):
         return ()
 
     def render(self) -> str:
-        if self.name:
-            root_type = " | ".join(py_type.type_hint for py_type in self.inner_py_types)
-            return f"type {self.name} = {root_type}"
-        else:
-            return ""
+        root_type = " | ".join(py_type.type_hint for py_type in self.inner_py_types)
+        return f"type {self.name} = {root_type}"
