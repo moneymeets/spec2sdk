@@ -17,12 +17,23 @@ class DataType[T](Model):
     enumerators: Sequence[Enumerator[T]] | None
 
 
-class IntegerDataType(DataType[int]):
+class NumericDataType[T](DataType[T]):
     format: str | None
 
+    # https://json-schema.org/draft/2020-12/json-schema-validation#name-validation-keywords-for-num
+    minimum: T | None
+    maximum: T | None
+    exclusive_minimum: T | None
+    exclusive_maximum: T | None
+    multiple_of: T | None
 
-class NumberDataType(DataType[float]):
-    format: str | None
+
+class IntegerDataType(NumericDataType[int]):
+    pass
+
+
+class NumberDataType(NumericDataType[float]):
+    pass
 
 
 class StringDataType(DataType[str]):

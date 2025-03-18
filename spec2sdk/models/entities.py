@@ -99,34 +99,73 @@ class StrEnumType(EnumType):
         )
 
 
-class IntegerType(PythonType):
-    default_value: int | None
+class NumericType[T](PythonType):
+    default_value: T | None
+    minimum: T | None
+    maximum: T | None
+    exclusive_minimum: T | None
+    exclusive_maximum: T | None
+    multiple_of: T | None
+
+    @property
+    @abstractmethod
+    def type_name(self) -> str: ...
+
+    @property
+    def _is_constrained_type(self) -> bool:
+        return (
+            (self.minimum is not None)
+            or (self.maximum is not None)
+            or (self.exclusive_minimum is not None)
+            or (self.exclusive_maximum is not None)
+            or (self.multiple_of is not None)
+        )
+
+    @property
+    def _type_annotation(self) -> str:
+        if self._is_constrained_type:
+            constraints = ",".join(
+                (
+                    *((f"ge={self.minimum}",) if self.minimum is not None else ()),
+                    *((f"le={self.maximum}",) if self.maximum is not None else ()),
+                    *((f"gt={self.exclusive_minimum}",) if self.exclusive_minimum is not None else ()),
+                    *((f"lt={self.exclusive_maximum}",) if self.exclusive_maximum is not None else ()),
+                    *((f"multiple_of={self.multiple_of}",) if self.multiple_of is not None else ()),
+                ),
+            )
+            return f"Annotated[{self.type_name}, Field({constraints})]"
+        else:
+            return self.type_name
 
     @property
     def type_hint(self) -> str:
-        return self.name or "int"
+        return self.name or self._type_annotation
 
     @property
     def imports(self) -> Sequence[Import]:
-        return ()
+        return (
+            (
+                Import(name="Annotated", package="typing"),
+                Import(name="Field", package="pydantic"),
+            )
+            if self._is_constrained_type
+            else ()
+        )
 
     def render(self) -> str:
-        return f"type {self.name} = int"
+        return f"type {self.name} = {self._type_annotation}"
 
 
-class FloatType(PythonType):
-    default_value: float | None
-
+class IntegerType(NumericType[int]):
     @property
-    def type_hint(self) -> str:
-        return self.name or "float"
+    def type_name(self) -> str:
+        return "int"
 
+
+class FloatType(NumericType[float]):
     @property
-    def imports(self) -> Sequence[Import]:
-        return ()
-
-    def render(self) -> str:
-        return f"type {self.name} = float"
+    def type_name(self) -> str:
+        return "float"
 
 
 class BooleanType(PythonType):

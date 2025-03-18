@@ -98,6 +98,11 @@ def parse_number(schema: dict) -> NumberDataType:
     return NumberDataType(
         **parse_common_fields(schema=schema, type_parser=float),
         format=schema.get("format"),
+        minimum=schema.get("minimum"),
+        maximum=schema.get("maximum"),
+        exclusive_minimum=schema.get("exclusiveMinimum"),
+        exclusive_maximum=schema.get("exclusiveMaximum"),
+        multiple_of=schema.get("multipleOf"),
     )
 
 
@@ -106,6 +111,11 @@ def parse_integer(schema: dict) -> IntegerDataType:
     return IntegerDataType(
         **parse_common_fields(schema=schema, type_parser=int),
         format=schema.get("format"),
+        minimum=schema.get("minimum"),
+        maximum=schema.get("maximum"),
+        exclusive_minimum=schema.get("exclusiveMinimum"),
+        exclusive_maximum=schema.get("exclusiveMaximum"),
+        multiple_of=schema.get("multipleOf"),
     )
 
 

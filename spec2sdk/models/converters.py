@@ -63,12 +63,26 @@ def convert_string(data_type: StringDataType) -> StringType:
 
 @converters.register(predicate=is_instance(IntegerDataType))
 def convert_integer(data_type: IntegerDataType) -> IntegerType:
-    return IntegerType(**convert_common_fields(data_type))
+    return IntegerType(
+        **convert_common_fields(data_type),
+        minimum=data_type.minimum,
+        maximum=data_type.maximum,
+        exclusive_minimum=data_type.exclusive_minimum,
+        exclusive_maximum=data_type.exclusive_maximum,
+        multiple_of=data_type.multiple_of,
+    )
 
 
 @converters.register(predicate=is_instance(NumberDataType))
 def convert_number(data_type: NumberDataType) -> FloatType:
-    return FloatType(**convert_common_fields(data_type))
+    return FloatType(
+        **convert_common_fields(data_type),
+        minimum=data_type.minimum,
+        maximum=data_type.maximum,
+        exclusive_minimum=data_type.exclusive_minimum,
+        exclusive_maximum=data_type.exclusive_maximum,
+        multiple_of=data_type.multiple_of,
+    )
 
 
 @converters.register(predicate=is_instance(BooleanDataType))
