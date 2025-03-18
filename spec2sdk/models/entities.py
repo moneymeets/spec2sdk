@@ -146,17 +146,45 @@ class BooleanType(PythonType):
 
 class StringType(PythonType):
     default_value: str | None
+    pattern: str | None
+    min_length: int | None
+    max_length: int | None
+
+    @property
+    def _is_constrained_type(self) -> bool:
+        return bool(self.pattern) or (self.min_length is not None) or (self.max_length is not None)
+
+    @property
+    def _type_annotation(self) -> str:
+        if self._is_constrained_type:
+            constraints = ",".join(
+                (
+                    *((f'pattern=r"{self.pattern}"',) if self.pattern else ()),
+                    *((f"min_length={self.min_length}",) if self.min_length is not None else ()),
+                    *((f"max_length={self.max_length}",) if self.max_length is not None else ()),
+                ),
+            )
+            return f"Annotated[str, StringConstraints({constraints})]"
+        else:
+            return "str"
 
     @property
     def type_hint(self) -> str:
-        return self.name or "str"
+        return self.name or self._type_annotation
 
     @property
     def imports(self) -> Sequence[Import]:
-        return ()
+        return (
+            (
+                Import(name="Annotated", package="typing"),
+                Import(name="StringConstraints", package="pydantic"),
+            )
+            if self._is_constrained_type
+            else ()
+        )
 
     def render(self) -> str:
-        return f"type {self.name} = str"
+        return f"type {self.name} = {self._type_annotation}"
 
 
 class BinaryType(PythonType):

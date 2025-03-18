@@ -53,7 +53,12 @@ def convert_common_fields(data_type: DataType) -> CommonFields:
 
 @converters.register(predicate=is_instance(StringDataType))
 def convert_string(data_type: StringDataType) -> StringType:
-    return StringType(**convert_common_fields(data_type))
+    return StringType(
+        **convert_common_fields(data_type),
+        pattern=data_type.pattern,
+        min_length=data_type.min_length,
+        max_length=data_type.max_length,
+    )
 
 
 @converters.register(predicate=is_instance(IntegerDataType))

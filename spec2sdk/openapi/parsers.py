@@ -88,6 +88,8 @@ def parse_string(schema: dict) -> StringDataType:
         **parse_common_fields(schema=schema, type_parser=str),
         format=schema.get("format"),
         pattern=schema.get("pattern"),
+        min_length=schema.get("minLength"),
+        max_length=schema.get("maxLength"),
     )
 
 

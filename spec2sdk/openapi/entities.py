@@ -27,7 +27,11 @@ class NumberDataType(DataType[float]):
 
 class StringDataType(DataType[str]):
     format: str | None
+
+    # https://json-schema.org/draft/2020-12/json-schema-validation#name-validation-keywords-for-str
     pattern: str | None
+    min_length: int | None
+    max_length: int | None
 
 
 class BooleanDataType(DataType[bool]):
