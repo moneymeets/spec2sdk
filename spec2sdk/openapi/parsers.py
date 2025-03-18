@@ -18,6 +18,7 @@ from .entities import (
     ObjectProperty,
     OneOfDataType,
     Parameter,
+    ParameterLocation,
     Path,
     RequestBody,
     Response,
@@ -190,7 +191,7 @@ def parse_spec(schema: dict) -> Specification:
             parameters = tuple(
                 Parameter(
                     name=parameter["name"],
-                    location=parameter["in"],
+                    location=ParameterLocation(parameter["in"]),
                     description=parameter.get("description"),
                     required=parameter.get("required", False),
                     data_type=parsers.convert(parameter["schema"]),
