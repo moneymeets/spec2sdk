@@ -160,6 +160,8 @@ def parse_array(schema: dict) -> ArrayDataType:
     return ArrayDataType(
         **parse_common_fields(schema=schema),
         item_type=parsers.convert(schema["items"]),
+        min_items=schema.get("minItems"),
+        max_items=schema.get("maxItems"),
     )
 
 

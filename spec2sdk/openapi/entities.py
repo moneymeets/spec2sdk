@@ -67,6 +67,10 @@ class ObjectDataType(DataType):
 class ArrayDataType(DataType):
     item_type: DataType
 
+    # https://json-schema.org/draft/2020-12/json-schema-validation#name-validation-keywords-for-arr
+    min_items: int | None
+    max_items: int | None
+
 
 class MultiDataType(DataType):
     data_types: Sequence[DataType]

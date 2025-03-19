@@ -328,6 +328,27 @@ class NoneType(PythonType):
 
 class ListType(PythonType):
     inner_py_type: PythonType
+    min_items: int | None
+    max_items: int | None
+
+    @property
+    def _is_constrained_type(self) -> bool:
+        return (self.min_items is not None) or (self.max_items is not None)
+
+    @property
+    def _type_annotation(self) -> str:
+        type_name = f"list[{self.inner_py_type.type_hint}]"
+
+        if self._is_constrained_type:
+            constraints = ",".join(
+                (
+                    *((f"min_length={self.min_items}",) if self.min_items is not None else ()),
+                    *((f"max_length={self.max_items}",) if self.max_items is not None else ()),
+                ),
+            )
+            return f"Annotated[{type_name}, Field({constraints})]"
+        else:
+            return type_name
 
     @property
     def dependency_types(self) -> Sequence[PythonType]:
@@ -335,15 +356,21 @@ class ListType(PythonType):
 
     @property
     def type_hint(self) -> str:
-        return self.name or f"list[{self.inner_py_type.type_hint}]"
+        return self.name or self._type_annotation
 
     @property
     def imports(self) -> Sequence[Import]:
-        return ()
+        return (
+            (
+                Import(name="Annotated", package="typing"),
+                Import(name="Field", package="pydantic"),
+            )
+            if self._is_constrained_type
+            else ()
+        )
 
     def render(self) -> str:
-        root_type = f"list[{self.inner_py_type.type_hint}]"
-        return f"type {self.name} = {root_type}"
+        return f"type {self.name} = {self._type_annotation}"
 
 
 class UnionType(PythonType):

@@ -137,6 +137,8 @@ def convert_array(data_type: ArrayDataType) -> ListType:
     return ListType(
         **convert_common_fields(data_type),
         inner_py_type=converters.convert(data_type.item_type),
+        min_items=data_type.min_items,
+        max_items=data_type.max_items,
     )
 
 
