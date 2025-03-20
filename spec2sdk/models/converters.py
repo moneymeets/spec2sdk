@@ -53,17 +53,36 @@ def convert_common_fields(data_type: DataType) -> CommonFields:
 
 @converters.register(predicate=is_instance(StringDataType))
 def convert_string(data_type: StringDataType) -> StringType:
-    return StringType(**convert_common_fields(data_type))
+    return StringType(
+        **convert_common_fields(data_type),
+        pattern=data_type.pattern,
+        min_length=data_type.min_length,
+        max_length=data_type.max_length,
+    )
 
 
 @converters.register(predicate=is_instance(IntegerDataType))
 def convert_integer(data_type: IntegerDataType) -> IntegerType:
-    return IntegerType(**convert_common_fields(data_type))
+    return IntegerType(
+        **convert_common_fields(data_type),
+        minimum=data_type.minimum,
+        maximum=data_type.maximum,
+        exclusive_minimum=data_type.exclusive_minimum,
+        exclusive_maximum=data_type.exclusive_maximum,
+        multiple_of=data_type.multiple_of,
+    )
 
 
 @converters.register(predicate=is_instance(NumberDataType))
 def convert_number(data_type: NumberDataType) -> FloatType:
-    return FloatType(**convert_common_fields(data_type))
+    return FloatType(
+        **convert_common_fields(data_type),
+        minimum=data_type.minimum,
+        maximum=data_type.maximum,
+        exclusive_minimum=data_type.exclusive_minimum,
+        exclusive_maximum=data_type.exclusive_maximum,
+        multiple_of=data_type.multiple_of,
+    )
 
 
 @converters.register(predicate=is_instance(BooleanDataType))
@@ -118,6 +137,8 @@ def convert_array(data_type: ArrayDataType) -> ListType:
     return ListType(
         **convert_common_fields(data_type),
         inner_py_type=converters.convert(data_type.item_type),
+        min_items=data_type.min_items,
+        max_items=data_type.max_items,
     )
 
 

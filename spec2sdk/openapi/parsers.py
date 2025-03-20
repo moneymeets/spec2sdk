@@ -18,6 +18,7 @@ from .entities import (
     ObjectProperty,
     OneOfDataType,
     Parameter,
+    ParameterLocation,
     Path,
     RequestBody,
     Response,
@@ -87,6 +88,8 @@ def parse_string(schema: dict) -> StringDataType:
         **parse_common_fields(schema=schema, type_parser=str),
         format=schema.get("format"),
         pattern=schema.get("pattern"),
+        min_length=schema.get("minLength"),
+        max_length=schema.get("maxLength"),
     )
 
 
@@ -95,6 +98,11 @@ def parse_number(schema: dict) -> NumberDataType:
     return NumberDataType(
         **parse_common_fields(schema=schema, type_parser=float),
         format=schema.get("format"),
+        minimum=schema.get("minimum"),
+        maximum=schema.get("maximum"),
+        exclusive_minimum=schema.get("exclusiveMinimum"),
+        exclusive_maximum=schema.get("exclusiveMaximum"),
+        multiple_of=schema.get("multipleOf"),
     )
 
 
@@ -103,6 +111,11 @@ def parse_integer(schema: dict) -> IntegerDataType:
     return IntegerDataType(
         **parse_common_fields(schema=schema, type_parser=int),
         format=schema.get("format"),
+        minimum=schema.get("minimum"),
+        maximum=schema.get("maximum"),
+        exclusive_minimum=schema.get("exclusiveMinimum"),
+        exclusive_maximum=schema.get("exclusiveMaximum"),
+        multiple_of=schema.get("multipleOf"),
     )
 
 
@@ -147,6 +160,8 @@ def parse_array(schema: dict) -> ArrayDataType:
     return ArrayDataType(
         **parse_common_fields(schema=schema),
         item_type=parsers.convert(schema["items"]),
+        min_items=schema.get("minItems"),
+        max_items=schema.get("maxItems"),
     )
 
 
@@ -190,7 +205,7 @@ def parse_spec(schema: dict) -> Specification:
             parameters = tuple(
                 Parameter(
                     name=parameter["name"],
-                    location=parameter["in"],
+                    location=ParameterLocation(parameter["in"]),
                     description=parameter.get("description"),
                     required=parameter.get("required", False),
                     data_type=parsers.convert(parameter["schema"]),
