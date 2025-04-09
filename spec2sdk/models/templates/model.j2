@@ -5,7 +5,7 @@ class {{ model_type.name }}({{ base_class_name }}):
     """
     {% endif %}
     {% for field in fields -%}
-        {{ field.name }}: {{ field.type_definition }}
+        {{ field.name }}: {{ field.type_hint }}
     {% endfor %}
     {% if arbitrary_fields_allowed %}model_config = ConfigDict(extra="allow"){% endif %}
     {% if not arbitrary_fields_allowed and not fields %}pass{% endif %}
