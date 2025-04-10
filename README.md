@@ -126,28 +126,23 @@ components:
 
 ```python
 from pathlib import Path
-from typing import Sequence
 
 from spec2sdk.openapi.entities import DataType, StringDataType
+from spec2sdk.models.annotations import TypeAnnotation
 from spec2sdk.models.converters import converters, convert_common_fields
-from spec2sdk.models.entities import PythonType
+from spec2sdk.models.entities import SimpleType
 from spec2sdk.models.imports import Import
 from spec2sdk.main import generate
 
 
-class EmailType(PythonType):
+class EmailType(SimpleType):
     @property
-    def type_hint(self) -> str:
-        return self.name or "EmailStr"
-
-    @property
-    def imports(self) -> Sequence[Import]:
-        return (
-            Import(name="EmailStr", package="pydantic"),
+    def type_definition(self) -> TypeAnnotation:
+        return TypeAnnotation(
+            type_hint="EmailStr",
+            type_imports=(Import(name="EmailStr", package="pydantic"),),
+            constraints=(),
         )
-
-    def render(self) -> str:
-        return f"type {self.name} = EmailStr" if self.name else ""
 
 
 def is_email_format(data_type: DataType) -> bool:

@@ -99,7 +99,6 @@ def convert_object(data_type: ObjectDataType) -> ModelType:
             ModelField(
                 name=make_variable_name(prop.name),
                 alias=prop.name,
-                type_hint=inner_py_type.type_hint,
                 description=prop.data_type.description if inner_py_type.name is None else None,
                 default_value=inner_py_type.default_value,
                 is_required=prop.is_required,

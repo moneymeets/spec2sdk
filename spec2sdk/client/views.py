@@ -6,7 +6,16 @@ from typing import Sequence
 from spec2sdk.base import Model
 from spec2sdk.models.converters import converters
 from spec2sdk.models.identifiers import make_variable_name
-from spec2sdk.openapi.entities import Endpoint, Parameter, ParameterLocation, Path, RequestBody, Response
+from spec2sdk.openapi.entities import (
+    Endpoint,
+    NullDataType,
+    OneOfDataType,
+    Parameter,
+    ParameterLocation,
+    Path,
+    RequestBody,
+    Response,
+)
 
 
 def wordwrap(s: str, width: int) -> str:
@@ -44,7 +53,25 @@ class ParameterView:
 
     @property
     def type_hint(self) -> str:
-        return converters.convert(self.__parameter.data_type).type_hint
+        return converters.convert(
+            self.__parameter.data_type
+            if self.required
+            else OneOfDataType(
+                name=None,
+                description=None,
+                default_value=None,
+                enumerators=None,
+                data_types=(
+                    self.__parameter.data_type,
+                    NullDataType(
+                        name=None,
+                        description=None,
+                        default_value=None,
+                        enumerators=None,
+                    ),
+                ),
+            ),
+        ).type_hint
 
     @property
     def required(self) -> bool:
