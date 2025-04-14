@@ -1,5 +1,6 @@
 import textwrap
 from abc import ABC, abstractmethod
+from functools import cached_property
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -30,7 +31,7 @@ class PythonType(Model, ABC):
             else self.type_definition
         )
 
-    @property
+    @cached_property
     def type_hint(self) -> str:
         return self.type_annotation.render()
 
