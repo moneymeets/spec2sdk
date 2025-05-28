@@ -1,6 +1,8 @@
+import json
 from functools import reduce
+from pathlib import Path
 from typing import Any, ClassVar, Final, Sequence
-from urllib.parse import urldefrag, urljoin
+from urllib.parse import urldefrag, urljoin, urlparse
 from urllib.request import urlopen
 
 import yaml
@@ -18,7 +20,11 @@ class SchemaLoader(BaseModel):
 
     def _read_schema(self) -> dict:
         if self.schema_url not in self._schema_cache:
-            self._schema_cache[self.schema_url] = yaml.safe_load(stream=urlopen(self.schema_url))
+            reader = urlopen(self.schema_url)
+            extension = Path(urlparse(self.schema_url).path).suffix
+            self._schema_cache[self.schema_url] = (
+                json.load(fp=reader) if extension.lower() == ".json" else yaml.safe_load(stream=reader)
+            )
 
         return self._schema_cache[self.schema_url]
 
