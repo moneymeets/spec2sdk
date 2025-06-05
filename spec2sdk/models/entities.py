@@ -12,8 +12,6 @@ from spec2sdk.templating import create_jinja_environment
 
 class PythonType(Model, ABC):
     name: str | None
-    description: str | None
-    default_value: Any
 
     @property
     def dependency_types(self) -> Sequence["PythonType"]:
@@ -76,7 +74,6 @@ class EnumMemberView(Model):
 
 class EnumType(PythonType):
     members: Sequence[EnumMember]
-    default_value: EnumMember | None
 
     @property
     def type_definition(self) -> TypeAnnotation:
@@ -120,7 +117,6 @@ class StrEnumType(EnumType):
 
 
 class NumericType[T](SimpleType):
-    default_value: T | None
     minimum: T | None
     maximum: T | None
     exclusive_minimum: T | None
@@ -195,15 +191,12 @@ class FloatType(NumericType[float]):
 
 
 class BooleanType(SimpleType):
-    default_value: bool | None
-
     @property
     def type_definition(self) -> TypeAnnotation:
         return TypeAnnotation(type_hint="bool", type_imports=(), constraints=())
 
 
 class StringType(SimpleType):
-    default_value: str | None
     pattern: str | None
     min_length: int | None
     max_length: int | None
@@ -264,6 +257,7 @@ class ModelFieldView(Model):
 
 class ModelType(PythonType):
     base_models: Sequence["ModelType"]
+    description: str | None
     fields: Sequence[ModelField]
     arbitrary_fields_allowed: bool
 
