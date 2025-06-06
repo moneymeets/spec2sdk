@@ -65,8 +65,6 @@ def parse_default_value[I, O](schema: dict, type_parser: Callable[[I], O] | None
 
 class CommonFields(TypedDict):
     name: str | None
-    description: str | None
-    default_value: Any | None
     enumerators: Sequence[Enumerator] | None
 
 
@@ -76,8 +74,6 @@ def parse_common_fields[I, O](
 ) -> CommonFields:
     return CommonFields(
         name=schema.get(SCHEMA_NAME_FIELD),
-        description=schema.get("description"),
-        default_value=parse_default_value(schema, type_parser),
         enumerators=parse_enumerators(schema, type_parser),
     )
 
@@ -143,10 +139,13 @@ def parse_object(schema: dict) -> ObjectDataType:
 
     return ObjectDataType(
         **parse_common_fields(schema=schema),
+        description=schema.get("description"),
         properties=tuple(
             ObjectProperty(
                 data_type=parsers.convert(property_schema),
                 name=property_name,
+                description=property_schema.get("description"),
+                default_value=parse_default_value(property_schema),
                 is_required=property_name in schema.get("required", ()),
             )
             for property_name, property_schema in schema.get("properties", {}).items()

@@ -1,5 +1,3 @@
-from typing import Any, TypedDict
-
 from spec2sdk.models.entities import (
     BinaryType,
     BooleanType,
@@ -37,24 +35,14 @@ from spec2sdk.registry import Registry
 converters = Registry()
 
 
-class CommonFields(TypedDict):
-    name: str | None
-    description: str | None
-    default_value: Any
-
-
-def convert_common_fields(data_type: DataType) -> CommonFields:
-    return CommonFields(
-        name=make_class_name(data_type.name) if data_type.name else None,
-        description=data_type.description,
-        default_value=data_type.default_value,
-    )
+def make_type_class_name(data_type: DataType) -> str | None:
+    return make_class_name(data_type.name) if data_type.name else None
 
 
 @converters.register(predicate=is_instance(StringDataType))
 def convert_string(data_type: StringDataType) -> StringType:
     return StringType(
-        **convert_common_fields(data_type),
+        name=make_type_class_name(data_type),
         pattern=data_type.pattern,
         min_length=data_type.min_length,
         max_length=data_type.max_length,
@@ -64,7 +52,7 @@ def convert_string(data_type: StringDataType) -> StringType:
 @converters.register(predicate=is_instance(IntegerDataType))
 def convert_integer(data_type: IntegerDataType) -> IntegerType:
     return IntegerType(
-        **convert_common_fields(data_type),
+        name=make_type_class_name(data_type),
         minimum=data_type.minimum,
         maximum=data_type.maximum,
         exclusive_minimum=data_type.exclusive_minimum,
@@ -76,7 +64,7 @@ def convert_integer(data_type: IntegerDataType) -> IntegerType:
 @converters.register(predicate=is_instance(NumberDataType))
 def convert_number(data_type: NumberDataType) -> FloatType:
     return FloatType(
-        **convert_common_fields(data_type),
+        name=make_type_class_name(data_type),
         minimum=data_type.minimum,
         maximum=data_type.maximum,
         exclusive_minimum=data_type.exclusive_minimum,
@@ -87,20 +75,21 @@ def convert_number(data_type: NumberDataType) -> FloatType:
 
 @converters.register(predicate=is_instance(BooleanDataType))
 def convert_boolean(data_type: BooleanDataType) -> BooleanType:
-    return BooleanType(**convert_common_fields(data_type))
+    return BooleanType(name=make_type_class_name(data_type))
 
 
 @converters.register(predicate=is_instance(ObjectDataType))
 def convert_object(data_type: ObjectDataType) -> ModelType:
     return ModelType(
-        **convert_common_fields(data_type),
+        name=make_type_class_name(data_type),
         base_models=(),
+        description=data_type.description,
         fields=tuple(
             ModelField(
                 name=make_variable_name(prop.name),
                 alias=prop.name,
-                description=prop.data_type.description if inner_py_type.name is None else None,
-                default_value=inner_py_type.default_value,
+                description=prop.description if inner_py_type.name is None else None,
+                default_value=prop.default_value,
                 is_required=prop.is_required,
                 inner_py_type=inner_py_type,
             )
@@ -111,17 +100,10 @@ def convert_object(data_type: ObjectDataType) -> ModelType:
                     if prop.is_required
                     else OneOfDataType(
                         name=None,
-                        description=None,
-                        default_value=None,
                         enumerators=None,
                         data_types=(
                             prop.data_type,
-                            NullDataType(
-                                name=None,
-                                description=None,
-                                default_value=None,
-                                enumerators=None,
-                            ),
+                            NullDataType(name=None, enumerators=None),
                         ),
                     ),
                 )
@@ -134,7 +116,7 @@ def convert_object(data_type: ObjectDataType) -> ModelType:
 @converters.register(predicate=is_instance(ArrayDataType))
 def convert_array(data_type: ArrayDataType) -> ListType:
     return ListType(
-        **convert_common_fields(data_type),
+        name=make_type_class_name(data_type),
         inner_py_type=converters.convert(data_type.item_type),
         min_items=data_type.min_items,
         max_items=data_type.max_items,
@@ -146,7 +128,7 @@ def convert_one_of(data_type: OneOfDataType | AnyOfDataType) -> UnionType:
     inner_py_types = tuple(map(converters.convert, data_type.data_types))
 
     return UnionType(
-        **convert_common_fields(data_type),
+        name=make_type_class_name(data_type),
         inner_py_types=inner_py_types,
     )
 
@@ -170,8 +152,7 @@ def convert_all_of(data_type: AllOfDataType) -> ModelType:
 
     return ModelType(
         name=make_class_name(data_type.name),
-        description=data_type.description,
-        default_value=model_type.default_value,
+        description=None,
         base_models=tuple(
             converters.convert(inner_data_type)
             for inner_data_type in data_type.data_types
@@ -198,15 +179,8 @@ def convert_enum(data_type: DataType) -> EnumType:
         EnumMember(name=generate_enum_member_name(member), value=member.value) for member in data_type.enumerators
     )
 
-    default_value = None
-    for member in members:
-        if member.value == data_type.default_value:
-            default_value = member
-
     return EnumType(
         name=make_class_name(data_type.name),
-        description=data_type.description,
-        default_value=default_value,
         members=members,
     )
 
@@ -218,23 +192,17 @@ def convert_str_enum(data_type: StringDataType) -> StrEnumType:
 
 @converters.register(predicate=is_binary_format)
 def convert_binary(data_type: StringDataType) -> BinaryType:
-    return BinaryType(**convert_common_fields(data_type))
+    return BinaryType(name=make_type_class_name(data_type))
 
 
 @converters.register(predicate=is_literal)
 def convert_literal(data_type: DataType) -> LiteralType:
     return LiteralType(
         name=None,
-        description=data_type.description,
-        default_value=data_type.default_value,
         literals=tuple(enumerator.value for enumerator in data_type.enumerators or ()),
     )
 
 
 @converters.register(predicate=is_instance(NullDataType))
 def convert_none(data_type: NullDataType) -> NoneType:
-    return NoneType(
-        name=data_type.name,
-        description=data_type.description,
-        default_value=data_type.default_value,
-    )
+    return NoneType(name=data_type.name)

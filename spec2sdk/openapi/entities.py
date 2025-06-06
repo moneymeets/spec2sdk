@@ -12,8 +12,6 @@ class Enumerator[T](Model):
 
 class DataType[T](Model):
     name: str | None
-    description: str | None
-    default_value: T | None
     enumerators: Sequence[Enumerator[T]] | None
 
 
@@ -56,10 +54,13 @@ class NullDataType(DataType[NoneType]):
 class ObjectProperty(Model):
     data_type: DataType
     name: str
+    description: str | None
+    default_value: Any
     is_required: bool
 
 
 class ObjectDataType(DataType):
+    description: str | None
     properties: Sequence[ObjectProperty]
     additional_properties: bool
 
