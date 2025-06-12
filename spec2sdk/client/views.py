@@ -58,17 +58,10 @@ class ParameterView:
             if self.required
             else OneOfDataType(
                 name=None,
-                description=None,
-                default_value=None,
                 enumerators=None,
                 data_types=(
                     self.__parameter.data_type,
-                    NullDataType(
-                        name=None,
-                        description=None,
-                        default_value=None,
-                        enumerators=None,
-                    ),
+                    NullDataType(name=None, enumerators=None),
                 ),
             ),
         ).type_hint
