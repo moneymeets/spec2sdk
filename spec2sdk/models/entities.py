@@ -1,4 +1,3 @@
-import textwrap
 from abc import ABC, abstractmethod
 from functools import cached_property
 from pathlib import Path
@@ -277,9 +276,6 @@ class ModelType(PythonType):
         )
 
     def create_field_annotation(self, field: ModelField) -> TypeAnnotation:
-        def split_long_lines(s: str) -> str:
-            return '"' + ' ""'.join(line.replace('"', r"\"") for line in textwrap.wrap(s, width=80)) + '"'
-
         field_constraints = (
             *(
                 (TypeConstraintParameter(name="default", value=repr(field.default_value)),)
@@ -288,7 +284,12 @@ class ModelType(PythonType):
             ),
             *((TypeConstraintParameter(name="alias", value=repr(field.alias)),) if field.name != field.alias else ()),
             *(
-                (TypeConstraintParameter(name="description", value=split_long_lines(field.description)),)
+                (
+                    TypeConstraintParameter(
+                        name="description",
+                        value=repr(" ".join(field.description.splitlines()).strip()),
+                    ),
+                )
                 if field.description
                 else ()
             ),

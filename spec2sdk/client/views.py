@@ -58,17 +58,10 @@ class ParameterView:
             if self.required
             else OneOfDataType(
                 name=None,
-                description=None,
-                default_value=None,
                 enumerators=None,
                 data_types=(
                     self.__parameter.data_type,
-                    NullDataType(
-                        name=None,
-                        description=None,
-                        default_value=None,
-                        enumerators=None,
-                    ),
+                    NullDataType(name=None, enumerators=None),
                 ),
             ),
         ).type_hint
@@ -228,7 +221,7 @@ class EndpointView:
         if self.summary:
             result.append(wordwrap(self.summary, width=99))
 
-        if self.method_parameters:
+        if any(parameter.description for parameter in self.method_parameters):
             result.append(
                 "\n".join(
                     indent(wordwrap(f":param {parameter.name}: {parameter.description or ''}", width=99), width=7)
