@@ -33,6 +33,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "~3.12"
 
+black = "*"  # Remove once ruff can break long strings
 jinja2 = "*"
 openapi-spec-validator = "*"
 pydantic = "~2"
