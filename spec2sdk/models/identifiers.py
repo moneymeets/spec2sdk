@@ -13,6 +13,10 @@ def make_identifier(name: str) -> str:
     and replacing invalid characters with underscore.
     """
 
+    # Special case for PHP multi-value query parameters
+    if name.endswith("[]"):
+        name = name.removesuffix("[]") + "s"
+
     name = "_".join(name_part for name_part in INVALID_CHARACTERS_PATTERN.split(name) if name_part)
 
     # Add underscore to the name if it's a valid Python keyword
