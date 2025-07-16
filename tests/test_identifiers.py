@@ -1,6 +1,10 @@
 from spec2sdk.models.identifiers import make_class_name, make_constant_name, make_identifier, make_variable_name
 
 
+def test_php_multi_value_query_parameters():
+    assert make_identifier("id[]") == "ids"
+
+
 def test_remove_invalid_leading_characters():
     assert make_identifier("12+34-_56Variable78Name90") == "Variable78Name90"
 
