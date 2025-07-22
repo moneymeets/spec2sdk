@@ -131,7 +131,7 @@ def parse_null(schema: dict) -> NullDataType:
 
 @parsers.register(predicate=type_equals("object"))
 def parse_object(schema: dict) -> ObjectDataType:
-    additional_properties: bool = schema.get("additionalProperties") in (None, True, {})
+    additional_properties: bool = schema.get("additionalProperties", False) in (None, True, {})
 
     return ObjectDataType(
         **parse_common_fields(schema=schema),
