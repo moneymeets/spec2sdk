@@ -372,8 +372,8 @@ class ListType(SimpleType):
         )
 
         return TypeAnnotation(
-            type_hint=f"list[{self.inner_py_type.type_hint}]",
-            type_imports=(),
+            type_hint=f"Sequence[{self.inner_py_type.type_hint}]",
+            type_imports=(Import(name="Sequence", package="typing"),),
             constraints=constraints,
         )
 
