@@ -19,15 +19,15 @@ def format_files(path: Path):
 
     # Formatting and linting explanation:
     # 1. Break long strings with black. Remove black call once ruff can break long strings.
-    # 2. Format the code [line will be a 120 character]
-    # 3. Add trailing comma [line will be a 121 character]
-    # 4. Format the code [line will be a 120 character]
-    # 5. Apply linting auto fixes, and then check if the generated code follow the linting rules
+    # 2. Add trailing comma [line might be longer than 121 character]
+    # 3. Format the code [line will be a 120 character]
+    # 4. Apply linting auto fixes, and then check if the generated code follow the linting rules
+    # 5. Format the code
     run_formatter("black --preview --unstable --line-length 120")
-    run_formatter("ruff format")
     run_formatter("ruff check --select COM812 --fix")
     run_formatter("ruff format")
     run_formatter("ruff check --fix")
+    run_formatter("ruff format")
 
 
 def generate(schema_url: str, output_dir: Path):
