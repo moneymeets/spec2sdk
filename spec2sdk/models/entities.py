@@ -89,7 +89,7 @@ class EnumType(PythonType):
             .render(
                 enum_type=self,
                 base_class_name="Enum",
-                members=tuple(EnumMemberView(name=member.name, value=member.value) for member in self.members),
+                members=tuple(EnumMemberView(name=member.name, value=str(member.value)) for member in self.members),
             )
         )
 
