@@ -1,6 +1,6 @@
 from typing import Callable, Type
 
-from spec2sdk.openapi.entities import DataType, StringDataType
+from spec2sdk.openapi.entities import DataType, IntegerDataType, StringDataType
 
 
 def is_instance[T](data_class: Type[T] | tuple[Type[T], ...]) -> Callable[[T], bool]:
@@ -12,6 +12,10 @@ def is_instance[T](data_class: Type[T] | tuple[Type[T], ...]) -> Callable[[T], b
 
 def is_enum(data_type: DataType) -> bool:
     return data_type.name is not None and data_type.enumerators is not None
+
+
+def is_int_enum(data_type: DataType) -> bool:
+    return isinstance(data_type, IntegerDataType) and is_enum(data_type)
 
 
 def is_str_enum(data_type: DataType) -> bool:
