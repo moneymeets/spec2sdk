@@ -206,7 +206,7 @@ from urllib.parse import urlencode
 
 from pydantic import TypeAdapter
 
-from sdk.api_client import APIClientResponse
+from sdk.api_client import APIClientResponse, SerializedData
 from sdk.http_client import HTTPClientProtocol, HTTPRequest
 
 
@@ -214,12 +214,15 @@ class APIClient:
     def __init__(self, http_client: HTTPClientProtocol):
         self._http_client = http_client
 
-    def serialize[T](self, *, data: T, data_type: Type[T], content_type: str | None) -> bytes:
+    def serialize[T](self, *, data: T, data_type: Type[T], content_type: str | None) -> SerializedData:
         match content_type:
             case "application/json":
-                return TypeAdapter(data_type).dump_json(data, by_alias=True)
+                return SerializedData(
+                    content=TypeAdapter(data_type).dump_json(data, by_alias=True),
+                    content_type=content_type,
+                )
             case _:
-                return data
+                return SerializedData(content=data, content_type=content_type)
 
     def deserialize[T](self, *, data: bytes | None, data_type: Type[T], content_type: str | None) -> T:
         match content_type:
@@ -247,12 +250,12 @@ class APIClient:
         response_type: Type[O] = NoneType,
         expected_status_code: HTTPStatus = HTTPStatus.OK,
     ) -> APIClientResponse[O]:
-        content = self.serialize(data=data, data_type=data_type, content_type=content_type) if data else None
+        serialized_data = self.serialize(data=data, data_type=data_type, content_type=content_type)
         request = HTTPRequest(
             method=method,
             url=self.build_url(path, query),
-            headers=(("Content-Type", content_type),) if content_type else (),
-            content=content,
+            headers=(("Content-Type", serialized_data.content_type),) if serialized_data.content_type else (),
+            content=serialized_data.content,
         )
         response = self._http_client.send_request(request=request)
 
