@@ -94,6 +94,27 @@ class EnumType(PythonType):
         )
 
 
+class IntEnumType(EnumType):
+    @property
+    def type_definition(self) -> TypeAnnotation:
+        return TypeAnnotation(
+            type_hint=self.name,
+            type_imports=(Import(name="IntEnum", package="enum"),),
+            constraints=(),
+        )
+
+    def render(self) -> str:
+        return (
+            create_jinja_environment(templates_path=Path(__file__).parent / "templates")
+            .get_template("enum.j2")
+            .render(
+                enum_type=self,
+                base_class_name="IntEnum",
+                members=tuple(EnumMemberView(name=member.name, value=str(member.value)) for member in self.members),
+            )
+        )
+
+
 class StrEnumType(EnumType):
     @property
     def type_definition(self) -> TypeAnnotation:

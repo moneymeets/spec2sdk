@@ -5,6 +5,7 @@ from spec2sdk.models.entities import (
     EnumType,
     FloatType,
     IntegerType,
+    IntEnumType,
     ListType,
     LiteralType,
     ModelField,
@@ -15,7 +16,7 @@ from spec2sdk.models.entities import (
     UnionType,
 )
 from spec2sdk.models.identifiers import make_class_name, make_constant_name, make_variable_name
-from spec2sdk.models.predicates import is_binary_format, is_enum, is_instance, is_literal, is_str_enum
+from spec2sdk.models.predicates import is_binary_format, is_enum, is_instance, is_int_enum, is_literal, is_str_enum
 from spec2sdk.openapi.entities import (
     AllOfDataType,
     AnyOfDataType,
@@ -183,6 +184,11 @@ def convert_enum(data_type: DataType) -> EnumType:
         name=make_class_name(data_type.name),
         members=members,
     )
+
+
+@converters.register(predicate=is_int_enum)
+def convert_int_enum(data_type: IntegerDataType) -> IntEnumType:
+    return IntEnumType(**convert_enum(data_type).model_dump())
 
 
 @converters.register(predicate=is_str_enum)
