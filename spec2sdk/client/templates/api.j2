@@ -56,13 +56,13 @@ class API:
     def {{ endpoint.method_name }}_response({{ method_parameters(endpoint) }}) -> APIClientResponse[{{ endpoint.response.type_hint }}]:
         {% if endpoint.docstring %}"""
 {{ endpoint.docstring }}
-        """{% endif %}
-        return {{ method_body(endpoint) }}
+        """
+        {% endif %}return {{ method_body(endpoint) }}
     {% endif %}
 
     def {{ endpoint.method_name }}({{ method_parameters(endpoint) }}) -> {{ endpoint.response.type_hint }}:
         {% if endpoint.docstring %}"""
 {{ endpoint.docstring }}
-        """{% endif %}
-        return {{ method_body(endpoint) }}.data
+        """
+        {% endif %}return {{ method_body(endpoint) }}.data
 {% endfor %}
