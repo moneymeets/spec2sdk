@@ -16,7 +16,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "License :: OSI Approved :: MIT License",
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 
 [project.urls]
 repository = "https://github.com/moneymeets/spec2sdk"
@@ -31,7 +31,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "~3.12"
+python = "~=3.14.0"
 
 black = "*"  # Remove once ruff can break long strings
 jinja2 = "*"
